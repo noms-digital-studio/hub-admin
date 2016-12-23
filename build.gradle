@@ -1,0 +1,25 @@
+
+apply plugin: 'idea'
+apply plugin: 'java'
+
+
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+description = 'hub admin'
+
+dependencies {
+    compile 'org.springframework.boot:1.4.2.RELEASE'
+
+    testCompile 'junit:junit:4.11'
+    testCompile 'org.assertj:assertj-core:3.6.1'
+    testCompile 'org.mockito:mockito-all:1.9.5'
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.14.1'
+}
