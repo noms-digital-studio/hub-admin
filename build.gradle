@@ -28,3 +28,7 @@ dependencies {
     testCompile 'org.mockito:mockito-all:1.9.5'
 }
 
+springBoot {
+    mainClass = "uk.gov.justice.digital.noms.hub.App"
+}
+
