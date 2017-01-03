@@ -14,7 +14,7 @@ import java.net.URI;
 import java.util.UUID;
 
 @Component
-@Path("/articles")
+@Path("/content-items")
 @Produces(MediaType.APPLICATION_JSON)
 public class AdminController {
     private MetadataRepository metadataRepository;
