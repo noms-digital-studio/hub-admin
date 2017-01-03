@@ -2,10 +2,10 @@ package uk.gov.justice.digital.noms.hub.domain;
 
 import java.util.Objects;
 
-public class Article {
+public class ContentItem {
     private final String title;
 
-    public Article(String title) {
+    public ContentItem(String title) {
         this.title = title;
     }
 
@@ -17,8 +17,8 @@ public class Article {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Article article = (Article) o;
-        return Objects.equals(title, article.title);
+        ContentItem contentItem = (ContentItem) o;
+        return Objects.equals(title, contentItem.title);
     }
 
     @Override

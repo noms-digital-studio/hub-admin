@@ -20,16 +20,16 @@ public class AdminControllerTest {
     @Mock private UriInfo uriInfo;
 
     @Test
-    public void savesTheArticleWithGivenTitle() throws Exception {
+    public void savesTheContentItemWithGivenTitle() throws Exception {
         // given
         AdminController adminController = new AdminController(metadataRepository);
         UUID uuid = UUID.randomUUID();
-        CreateArticleRequest createArticleRequest = new CreateArticleRequest();
-        when(metadataRepository.saveArticle(createArticleRequest.buildArticle())).thenReturn(uuid);
+        CreateContentItemRequest createContentItemRequest = new CreateContentItemRequest();
+        when(metadataRepository.save(createContentItemRequest.buildContentItem())).thenReturn(uuid);
         when(uriInfo.getAbsolutePathBuilder()).thenReturn(new JerseyUriBuilder());
 
         // when
-        Response responseEntity = adminController.saveArticle(createArticleRequest, uriInfo);
+        Response responseEntity = adminController.save(createContentItemRequest, uriInfo);
 
         // then
         assertThat(responseEntity.getStatus()).isEqualTo(201);

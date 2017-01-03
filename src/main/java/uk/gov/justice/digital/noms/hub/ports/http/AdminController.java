@@ -24,8 +24,8 @@ public class AdminController {
     }
 
     @POST
-    public Response saveArticle(CreateArticleRequest createArticleRequest, @Context UriInfo uriInfo) {
-        UUID uuid = metadataRepository.saveArticle(createArticleRequest.buildArticle());
+    public Response save(CreateContentItemRequest createContentItemRequest, @Context UriInfo uriInfo) {
+        UUID uuid = metadataRepository.save(createContentItemRequest.buildContentItem());
 
         URI location = uriInfo.getAbsolutePathBuilder()
                 .path("{id}")
