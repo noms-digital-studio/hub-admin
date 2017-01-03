@@ -10,9 +10,8 @@ National Offender Management Service.
 
 Endpoints
 ----
-POST /articles 
+POST /articles {"title":"string", "dropbox-url":"someurl"}
 
-{"title":"string"}
 
 Examples
 ----
@@ -28,4 +27,11 @@ Response:
 HTTP/1.1 201 
 Location: http://localhost:8080/articles/eb62aa48-96ee-474d-a8a2-5ce7deb9fcfb
 Content-Length: 0
-Date: Fri, 23 Dec 2016 18:50:50 GMT```
+Date: Fri, 23 Dec 2016 18:50:50 GMT
+```
+
+Monitoring
+----
+GET /private/health
+
+```http://localhost:8080/private/health```
