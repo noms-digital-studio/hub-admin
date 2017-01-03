@@ -33,3 +33,25 @@ springBoot {
     mainClass = "uk.gov.justice.digital.noms.hub.App"
 }
 
+configurations {
+    fttestCompile.extendsFrom testCompile
+    fttestRuntime.extendsFrom testRuntime
+}
+
+sourceSets {
+    fttest {
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
+
+        java.srcDir file('src/fttest/java')
+    }
+}
+
+task fttest(type: Test) {
+    testClassesDir = sourceSets.fttest.output.classesDir
+    classpath = sourceSets.fttest.runtimeClasspath
+
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
