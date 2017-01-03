@@ -14,11 +14,13 @@ POST /articles
 
 {"title":"string"}
 
-Example
+Examples
 ----
 Request:
 
 ```curl -i -X POST -H 'Content-Type:application/json' -d '{"title":"foo"}' http://<host>:<port>/articles```
+```curl -i -X POST -H 'Content-Type:application/json' -d '{"title":"foo"}' http://hub-admin.herokuapp.com/articles```
+```curl -i -X POST -H 'Content-Type:application/json' -d '{"title":"foo"}' http://localhost:8080/articles```
 
 Response:
 
