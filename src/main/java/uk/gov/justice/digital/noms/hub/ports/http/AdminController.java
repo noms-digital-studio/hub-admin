@@ -1,21 +1,20 @@
 package uk.gov.justice.digital.noms.hub.ports.http;
 
-import org.springframework.stereotype.Component;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
+import uk.gov.justice.digital.noms.hub.domain.ContentItem;
 import uk.gov.justice.digital.noms.hub.domain.MetadataRepository;
 
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-import java.net.URI;
 import java.util.UUID;
 
-@Component
-@Path("/content-items")
-@Produces(MediaType.APPLICATION_JSON)
+@Controller
 public class AdminController {
     private MetadataRepository metadataRepository;
 
@@ -23,15 +22,20 @@ public class AdminController {
         this.metadataRepository = metadataRepository;
     }
 
-    @POST
-    public Response save(CreateContentItemRequest createContentItemRequest, @Context UriInfo uriInfo) {
-        UUID uuid = metadataRepository.save(createContentItemRequest.buildContentItem());
+    @PostMapping("/content-items")
+    public ResponseEntity handleFileUpload(@RequestParam("file") MultipartFile file,
+                                           @RequestParam("title") String title,
+                                           UriComponentsBuilder uriComponentsBuilder) {
 
-        URI location = uriInfo.getAbsolutePathBuilder()
-                .path("{id}")
-                .resolveTemplate("id", uuid)
-                .build();
+        System.out.println("file name: " + file.getName());
+        System.out.println("file size: " + file.getSize());
+        System.out.println("title: " + title);
 
-        return Response.created(location).build();
+        UUID id = metadataRepository.save(new ContentItem(title));
+        UriComponents uriComponents = uriComponentsBuilder.path("/content-items/{id}").buildAndExpand(id);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(uriComponents.toUri());
+        return new ResponseEntity<Void>(headers, HttpStatus.CREATED);
     }
 }
