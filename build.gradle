@@ -1,3 +1,11 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+
+repositories {
+    mavenCentral()
+}
+
 buildscript {
     repositories {
         mavenCentral()
@@ -7,12 +15,15 @@ buildscript {
     }
 }
 
-apply plugin: 'java'
-apply plugin: 'idea'
-apply plugin: 'org.springframework.boot'
-
-repositories {
-    mavenCentral()
+sourceSets {
+    functionaltest {
+        compileClasspath = sourceSets.main.output + configurations.testRuntime
+        runtimeClasspath = output + sourceSets.main.output + configurations.testRuntime
+        java {
+            srcDir 'src/functionaltest'
+        }
+        resources.srcDir file('src/functionaltest/resources')
+    }
 }
 
 sourceCompatibility = 1.8
@@ -29,4 +40,22 @@ dependencies {
     testCompile 'com.mashape.unirest:unirest-java:1.4.9'
 }
 
+test {
+    testLogging {
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+        exceptionFormat = 'full'
+    }
+}
 
+task functionaltest(type: Test) {
+    testClassesDir = sourceSets.functionaltest.output.classesDir
+    classpath = sourceSets.functionaltest.runtimeClasspath
+
+    // This forces the functional tests to always run if the task is run
+    outputs.upToDateWhen { false }
+
+    testLogging {
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+        exceptionFormat = 'full'
+    }
+}

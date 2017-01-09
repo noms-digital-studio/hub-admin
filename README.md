@@ -46,4 +46,5 @@ Monitoring endpoint
 GET /private/health
 
 ```http://localhost:8080/private/health```
+
 ```http://hub-admin.herokuapp.com/private/health```
