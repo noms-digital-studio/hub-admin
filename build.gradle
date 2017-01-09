@@ -33,6 +33,7 @@ dependencies {
     compile 'org.springframework.boot:spring-boot-starter-web'
     compile 'org.springframework.boot:spring-boot-devtools'
     compile 'org.springframework.boot:spring-boot-configuration-processor'
+    compile 'ch.qos.logback:logback-core:1.1.7'
 
     testCompile 'org.assertj:assertj-core:3.6.1'
     testCompile 'org.mockito:mockito-all:1.9.5'

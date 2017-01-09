@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.noms.hub.ports.http;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,8 @@ import java.util.UUID;
 
 @RestController
 public class AdminController {
+    private static final Logger log = LoggerFactory.getLogger(AdminController.class);
+
     private MetadataRepository metadataRepository;
 
     public AdminController(MetadataRepository metadataRepository) {
@@ -26,6 +30,10 @@ public class AdminController {
     public ResponseEntity handleFileUpload(@RequestParam("file") MultipartFile file,
                                            @RequestParam("title") String title,
                                            UriComponentsBuilder uriComponentsBuilder) {
+
+        log.info("title: " + title);
+        log.info("filename: " + file.getName());
+        log.info("file size: " + file.getSize());
 
         UUID id = metadataRepository.save(new ContentItem(title));
         UriComponents uriComponents = uriComponentsBuilder.path("/content-items/{id}").buildAndExpand(id);
