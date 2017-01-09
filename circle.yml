@@ -1,10 +1,7 @@
 deployment:
   staging:
     branch: master
-    heroku:
-      appname: hub-admin
-
-test:
-  post:
-    - mkdir -p $CIRCLE_TEST_REPORTS/junit/
-    - find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
+    commands:
+      - git push git@heroku.com:hub-admin.git $CIRCLE_SHA1:master
+      - heroku ps:scale web=1 --app hub-admin
+      - ./gradlew functionaltest
