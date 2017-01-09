@@ -36,7 +36,7 @@ public class UploadImageTest {
                 .field("file", new File(this.getClass().getResource("/1-pixel.png").toURI()))
                 .asString();
 
-        assertThat(response.getStatus()).isEqualTo(HttpStatus.CREATED.value());
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
     }
 
 }
