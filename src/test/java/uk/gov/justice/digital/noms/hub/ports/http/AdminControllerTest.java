@@ -19,8 +19,8 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class AdminControllerTest {
 
-    @Mock MongoMetadataRepository mongoMetadataRepository;
-    @Mock MultipartFile file;
+    @Mock private MongoMetadataRepository mongoMetadataRepository;
+    @Mock private MultipartFile file;
 
     @Test
     public void createsContentItemAndReturnsTheLocation() {

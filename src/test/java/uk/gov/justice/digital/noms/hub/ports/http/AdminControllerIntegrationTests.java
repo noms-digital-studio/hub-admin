@@ -3,7 +3,6 @@ package uk.gov.justice.digital.noms.hub.ports.http;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.io.ClassPathResource;
@@ -23,13 +22,10 @@ public class AdminControllerIntegrationTests {
     @Autowired
     private TestRestTemplate restTemplate;
 
-    @LocalServerPort
-    private int port;
-
     @Test
     public void shouldUploadFile() throws Exception {
         // given
-        MultiValueMap<String, Object> map = new LinkedMultiValueMap<String, Object>();
+        MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
         map.add("file", new ClassPathResource("AdminController.class", getClass()));
         map.add("title", "aTitle");
 
