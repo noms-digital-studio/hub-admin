@@ -1,10 +1,12 @@
 test:
+  override:
+    - gradle build
   post:
     - env
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
     - find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
     - cp -r build $CIRCLE_ARTIFACTS
-    - cp -r build/reports/tests/test $CIRCLE_TEST_REPORTS/junit/report;
+    - cp -r build/reports/tests/test $CIRCLE_TEST_REPORTS/junit/report
 
 deployment:
   staging:
