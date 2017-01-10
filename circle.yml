@@ -1,6 +1,4 @@
 test:
-  override:
-    - ./gradlew build
   post:
     - env
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
