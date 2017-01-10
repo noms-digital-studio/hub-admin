@@ -1,3 +1,9 @@
+test:
+  override:
+    - ./gradlew build
+  post:
+    - cp -r build $CIRCLE_ARTIFACTS
+
 deployment:
   staging:
     branch: master
