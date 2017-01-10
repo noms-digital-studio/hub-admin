@@ -2,6 +2,8 @@ test:
   override:
     - ./gradlew build
   post:
+    - mkdir -p $CIRCLE_TEST_REPORTS/junit/
+    - find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
     - cp -r build $CIRCLE_ARTIFACTS
 
 deployment:
@@ -10,4 +12,4 @@ deployment:
     commands:
       - git push git@heroku.com:hub-admin.git $CIRCLE_SHA1:master
       - heroku ps:scale web=1 --app hub-admin
-      - ./gradlew functionaltest
+      - ./run-functional-tests.sh
