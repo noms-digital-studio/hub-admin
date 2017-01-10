@@ -30,12 +30,15 @@ public class UploadImageTest {
 
     @Test
     public void uploadsImageAndTitleSuccessfully() throws Exception {
+
+        // when
         HttpResponse<String> response = Unirest.post("http://" + hostname + ":" + port +"/content-items")
                 .header("accept", "application/json")
                 .field("title", "A one pixel image")
                 .field("file", new File(this.getClass().getResource("/1-pixel.png").toURI()))
                 .asString();
 
+        // then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.CREATED.value());
     }
 

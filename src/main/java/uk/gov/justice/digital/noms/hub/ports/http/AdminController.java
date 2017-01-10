@@ -27,12 +27,12 @@ public class AdminController {
     }
 
     @PostMapping("/content-items")
-    public ResponseEntity handleFileUpload(@RequestParam("file") MultipartFile file,
-                                           @RequestParam("title") String title,
-                                           UriComponentsBuilder uriComponentsBuilder) {
+    public ResponseEntity saveFileAndMetadata(@RequestParam("file") MultipartFile file,
+                                              @RequestParam("title") String title,
+                                              UriComponentsBuilder uriComponentsBuilder) {
 
         log.info("title: " + title);
-        log.info("filename: " + file.getName());
+        log.info("filename: " + file.getOriginalFilename());
         log.info("file size: " + file.getSize());
 
         UUID id = metadataRepository.save(new ContentItem(title));
