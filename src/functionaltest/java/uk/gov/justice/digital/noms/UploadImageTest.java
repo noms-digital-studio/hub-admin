@@ -58,9 +58,9 @@ public class UploadImageTest {
                 .asString();
 
         // then
-        String theContentItemResource = response.getHeaders().get("Location").get(0);
-
         assertThat(response.getStatus()).isEqualTo(HttpStatus.CREATED.value());
+
+        String theContentItemResource = response.getHeaders().get("Location").get(0);
         assertThat(theContentItemResource).contains("/content-items/");
         assertThat(theTitleInTheMongoDbFor(theContentItemResource)).isEqualTo("A one pixel image");
     }

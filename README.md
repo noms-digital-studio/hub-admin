@@ -48,3 +48,22 @@ GET /private/health
 ```http://localhost:8080/private/health```
 
 ```http://hub-admin.herokuapp.com/private/health```
+
+
+Environment variable required by the application
+----
+MONGODB_CONNECTION_URI - The MongoDb conneciton string
+e.g. 
+
+Environment variable required by the functional tests
+----
+APPLICATION_HOSTNAME - The hostname that the application is running on. Defaults to 'localhost'
+
+
+APPLICATION_PORT - The port where the application is running. Defaults to 8080
+e.g. 80
+ 
+MONGODB_CONNECTION_URI - The MongoDb conneciton string. Defaults to mongodb://localhost:27017
+e.g. mongodb:foo:<key>==@bar.documents.azure.com:10250/?ssl=true
+
+
