@@ -26,7 +26,7 @@ public class AdminControllerTest {
     public void createsContentItemAndReturnsTheLocation() {
         // given
         when(file.getOriginalFilename()).thenReturn("aFilename");
-        UUID id = UUID.randomUUID();
+        String id = UUID.randomUUID().toString();
         when(mongoMetadataRepository.save(any())).thenReturn(id);
         AdminController adminController = new AdminController(mongoMetadataRepository);
 

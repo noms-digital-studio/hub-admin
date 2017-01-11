@@ -2,6 +2,13 @@ package uk.gov.justice.digital.noms;
 
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
+import com.mongodb.BasicDBObject;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
@@ -14,6 +21,7 @@ public class UploadImageTest {
 
     private String hostname;
     private String port;
+    private MongoDatabase database;
 
     @Before
     public void readHostnameAndPort() {
@@ -28,6 +36,17 @@ public class UploadImageTest {
         }
     }
 
+    @Before
+    public void connectToMongoDb() {
+        String mongoConnectionUri = System.getenv("MONGODB_CONNECTION_URI");
+        if (mongoConnectionUri == null || mongoConnectionUri.isEmpty()) {
+            mongoConnectionUri = "mongodb://localhost:27017";
+        }
+
+        MongoClient mongoClient = new MongoClient(new MongoClientURI(mongoConnectionUri));
+        database = mongoClient.getDatabase("hub_metadata");
+    }
+
     @Test
     public void uploadsImageAndTitleSuccessfully() throws Exception {
 
@@ -39,7 +58,25 @@ public class UploadImageTest {
                 .asString();
 
         // then
+        String theContentItemResource = response.getHeaders().get("Location").get(0);
+
         assertThat(response.getStatus()).isEqualTo(HttpStatus.CREATED.value());
+        assertThat(theContentItemResource).contains("/content-items/");
+        assertThat(theTitleInTheMongoDbFor(theContentItemResource)).isEqualTo("A one pixel image");
+    }
+
+    private String theTitleInTheMongoDbFor(String location) {
+        MongoCollection<Document> collection = database.getCollection("content_items");
+        Document item = collection.find(new BasicDBObject("_id", new ObjectId(idFrom(location)))).first();
+        if (item != null) {
+            return item.getString("title");
+        }
+
+        return null;
+    }
+
+    private String idFrom(String location) {
+        return location.substring(location.lastIndexOf("/") + 1, location.length());
     }
 
 }

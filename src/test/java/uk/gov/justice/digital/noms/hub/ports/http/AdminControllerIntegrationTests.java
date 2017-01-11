@@ -23,7 +23,7 @@ public class AdminControllerIntegrationTests {
     private TestRestTemplate restTemplate;
 
     @Test
-    public void shouldUploadFile() throws Exception {
+    public void uploadsImageAndTitleSuccessfully() throws Exception {
         // given
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
         map.add("file", new ClassPathResource("AdminController.class", getClass()));
@@ -34,7 +34,7 @@ public class AdminControllerIntegrationTests {
 
         // then
         assertThat(response.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
-        assertThat(response.getHeaders().get("Location")).isNotNull();
+        assertThat(response.getHeaders().get("Location").get(0)).contains("/content-items/");
     }
 
 }

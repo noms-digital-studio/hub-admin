@@ -14,8 +14,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.justice.digital.noms.hub.domain.ContentItem;
 import uk.gov.justice.digital.noms.hub.domain.MetadataRepository;
 
-import java.util.UUID;
-
 @RestController
 public class AdminController {
     private static final Logger log = LoggerFactory.getLogger(AdminController.class);
@@ -35,7 +33,7 @@ public class AdminController {
         log.info("filename: " + file.getOriginalFilename());
         log.info("file size: " + file.getSize());
 
-        UUID id = metadataRepository.save(new ContentItem(title));
+        String id = metadataRepository.save(new ContentItem(title));
         UriComponents uriComponents = uriComponentsBuilder.path("/content-items/{id}").buildAndExpand(id);
 
         HttpHeaders headers = new HttpHeaders();
