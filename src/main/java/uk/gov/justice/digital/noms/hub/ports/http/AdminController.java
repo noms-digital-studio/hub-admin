@@ -43,6 +43,8 @@ public class AdminController {
         String mediaUri = mediaRepository.save(file.getInputStream(), file.getOriginalFilename(), file.getSize());
         String id = metadataRepository.save(new ContentItem(title, mediaUri));
 
+
+
         return new ResponseEntity<Void>(createLocationHeader(uriComponentsBuilder, id), HttpStatus.CREATED);
     }
 
@@ -50,6 +52,7 @@ public class AdminController {
         HttpHeaders headers = new HttpHeaders();
         UriComponents uriComponents = uriComponentsBuilder.path("/content-items/{id}").buildAndExpand(id);
         headers.setLocation(uriComponents.toUri());
+        headers.add("Access-Control-Allow-Origin", "https://noms-digital-studio.github.io/hub-admin-ui/");
         return headers;
     }
 }
