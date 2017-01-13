@@ -17,8 +17,14 @@ import org.junit.Test;
 import org.springframework.http.HttpStatus;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.security.DigestInputStream;
 import java.security.InvalidKeyException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -85,6 +91,9 @@ public class UploadImageTest {
         // Given
         theImageDoesNotExistInAzure();
 
+        // get MD5
+        byte[] originalMd5 = mD5For(new FileInputStream(new File(getClass().getResource("/" + IMAGE_FILE_NAME).toURI())));
+
         // when
         HttpResponse<String> response = Unirest.post("http://" + hostname + ":" + port + "/content-items")
                 .header("accept", "application/json")
@@ -104,6 +113,16 @@ public class UploadImageTest {
 
         HttpResponse<String> imageResponse = Unirest.get(document.getString("uri")).asString();
         assertThat(imageResponse.getStatus()).isEqualTo(HttpStatus.OK.value());
+        assertThat(mD5For(imageResponse.getRawBody())).isEqualTo(originalMd5);
+    }
+
+    private byte[] mD5For(InputStream is) throws URISyntaxException, NoSuchAlgorithmException, IOException {
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        try (DigestInputStream dis = new DigestInputStream(is, md))
+        {
+            while (dis.read() != -1) {}
+        }
+        return md.digest();
     }
 
     private void theImageDoesNotExistInAzure() throws URISyntaxException, StorageException {
