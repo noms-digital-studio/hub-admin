@@ -13,6 +13,7 @@ import java.security.InvalidKeyException;
 
 @Repository
 public class AzureMediaRepository implements MediaRepository {
+    private static final String CONTAINER_NAME = "content-items";
 
     private CloudBlobContainer container;
     private String azurePublicUrlBase;
@@ -25,7 +26,7 @@ public class AzureMediaRepository implements MediaRepository {
 
         azurePublicUrlBase = System.getenv("AZURE_BLOB_STORE_PUBLIC_URL_BASE");
         if (azurePublicUrlBase == null || azurePublicUrlBase.isEmpty()) {
-            azurePublicUrlBase = "http://digitalhub2.blob.core.windows.net/content-items/";
+            azurePublicUrlBase = "http://digitalhub2.blob.core.windows.net";
         }
 
         setupContainer(azureConnectionUri);
@@ -34,7 +35,7 @@ public class AzureMediaRepository implements MediaRepository {
     private void setupContainer(String azureConnectionUri) throws URISyntaxException, InvalidKeyException, StorageException {
         CloudStorageAccount storageAccount = CloudStorageAccount.parse(azureConnectionUri);
         CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
-        container = blobClient.getContainerReference("content-items");
+        container = blobClient.getContainerReference(CONTAINER_NAME);
         container.createIfNotExists();
         BlobContainerPermissions containerPermissions = new BlobContainerPermissions();
         containerPermissions.setPublicAccess(BlobContainerPublicAccessType.CONTAINER);
@@ -46,7 +47,7 @@ public class AzureMediaRepository implements MediaRepository {
         try {
             CloudBlockBlob blob = container.getBlockBlobReference(filename);
             blob.upload(mediaStream, size);
-            return azurePublicUrlBase + filename;
+            return String.format("%s/%s/%s", azurePublicUrlBase, CONTAINER_NAME, filename);
         } catch (URISyntaxException | StorageException | IOException e) {
             throw new RuntimeException(e);
         }

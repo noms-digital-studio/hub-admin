@@ -2,6 +2,9 @@ package uk.gov.justice.digital.noms;
 
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.StorageException;
+import com.microsoft.azure.storage.blob.*;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
@@ -14,15 +17,22 @@ import org.junit.Test;
 import org.springframework.http.HttpStatus;
 
 import java.io.File;
+import java.net.URISyntaxException;
+import java.security.InvalidKeyException;
 
+import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
 
 public class UploadImageTest {
+    private static final String IMAGE_FILE_NAME = "hub-admin-1-pixel.png";
+    private static final String CONTAINER_NAME = "content-items";
 
     private String hostname;
     private String port;
     private MongoDatabase database;
+    private CloudBlobContainer container;
+    private String azurePublicUrlBase;
 
     @Before
     public void readHostnameAndPort() {
@@ -48,14 +58,38 @@ public class UploadImageTest {
         database = mongoClient.getDatabase("hub_metadata");
     }
 
+    @Before
+    public void connectToAzureBlobStore() throws URISyntaxException, InvalidKeyException, StorageException {
+        String azureConnectionUri = System.getenv("AZURE_BLOB_STORE_CONNECTION_URI");
+        if (azureConnectionUri == null || azureConnectionUri.isEmpty()) {
+            throw new RuntimeException("AZURE_BLOB_STORE_CONNECTION_URI environment variable was not set");
+        }
+
+        azurePublicUrlBase = System.getenv("AZURE_BLOB_STORE_PUBLIC_URL_BASE");
+        if (azurePublicUrlBase == null || azurePublicUrlBase.isEmpty()) {
+            azurePublicUrlBase = "http://digitalhub2.blob.core.windows.net";
+        }
+
+        CloudStorageAccount storageAccount = CloudStorageAccount.parse(azureConnectionUri);
+        CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
+        container = blobClient.getContainerReference(CONTAINER_NAME);
+        container.createIfNotExists();
+
+        BlobContainerPermissions containerPermissions = new BlobContainerPermissions();
+        containerPermissions.setPublicAccess(BlobContainerPublicAccessType.CONTAINER);
+        container.uploadPermissions(containerPermissions);
+    }
+
     @Test
     public void uploadsImageAndTitleSuccessfully() throws Exception {
+        // Given
+        theImageDoesNotExistInAzure();
 
         // when
-        HttpResponse<String> response = Unirest.post("http://" + hostname + ":" + port +"/content-items")
+        HttpResponse<String> response = Unirest.post("http://" + hostname + ":" + port + "/content-items")
                 .header("accept", "application/json")
                 .field("title", "A one pixel image")
-                .field("file", new File(this.getClass().getResource("/1-pixel.png").toURI()))
+                .field("file", new File(this.getClass().getResource("/" + IMAGE_FILE_NAME).toURI()))
                 .asString();
 
         // then
@@ -66,10 +100,15 @@ public class UploadImageTest {
 
         Document document = theDocumentInTheMongoDbFor(theContentItemResource);
         assertThat(document).contains(entry("title", "A one pixel image"));
-        assertThat(document).contains(entry("uri", "http://digitalhub2.blob.core.windows.net/content-items/1-pixel.png"));
+        assertThat(document).contains(entry("uri", format("%s/%s/%s", azurePublicUrlBase, CONTAINER_NAME, IMAGE_FILE_NAME)));
 
         HttpResponse<String> imageResponse = Unirest.get(document.getString("uri")).asString();
         assertThat(imageResponse.getStatus()).isEqualTo(HttpStatus.OK.value());
+    }
+
+    private void theImageDoesNotExistInAzure() throws URISyntaxException, StorageException {
+        CloudBlockBlob blob = container.getBlockBlobReference(IMAGE_FILE_NAME);
+        blob.deleteIfExists();
     }
 
     private Document theDocumentInTheMongoDbFor(String location) {

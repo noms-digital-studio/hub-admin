@@ -60,7 +60,7 @@ AZURE_BLOB_STORE_CONNECTION_URI - The Azure blob store connection string.
 e.g. DefaultEndpointsProtocol=http;AccountName=<account name>;AccountKey=<key>
 
 AZURE_BLOB_STORE_PUBLIC_URL_BASE - The base URL for items in the blob store.   
-e.g. https://<account name>.blob.core.windows.net/content-items/
+e.g. https://<account name>.blob.core.windows.net
 
 Environment variable required by the functional tests
 ----
@@ -72,6 +72,13 @@ e.g. 80
  
 MONGODB_CONNECTION_URI - The MongoDb connection string. Defaults to mongodb://localhost:27017
 e.g. mongodb:<user>:<key>==@bar.documents.azure.com:10250/?ssl=true
+
+AZURE_BLOB_STORE_CONNECTION_URI - The Azure blob store connection string. 
+e.g. DefaultEndpointsProtocol=http;AccountName=<account name>;AccountKey=<key>
+
+AZURE_BLOB_STORE_PUBLIC_URL_BASE - The base URL for items in the blob store.   
+e.g. https://<account name>.blob.core.windows.net
+
 
 
 
