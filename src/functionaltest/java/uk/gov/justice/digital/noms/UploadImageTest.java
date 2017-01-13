@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import java.io.File;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.MapEntry.entry;
 
 public class UploadImageTest {
 
@@ -62,17 +63,18 @@ public class UploadImageTest {
 
         String theContentItemResource = response.getHeaders().get("Location").get(0);
         assertThat(theContentItemResource).contains("/content-items/");
-        assertThat(theTitleInTheMongoDbFor(theContentItemResource)).isEqualTo("A one pixel image");
+
+        Document document = theDocumentInTheMongoDbFor(theContentItemResource);
+        assertThat(document).contains(entry("title", "A one pixel image"));
+        assertThat(document).contains(entry("uri", "http://digitalhub2.blob.core.windows.net/content-items/1-pixel.png"));
+
+        HttpResponse<String> imageResponse = Unirest.get(document.getString("uri")).asString();
+        assertThat(imageResponse.getStatus()).isEqualTo(HttpStatus.OK.value());
     }
 
-    private String theTitleInTheMongoDbFor(String location) {
+    private Document theDocumentInTheMongoDbFor(String location) {
         MongoCollection<Document> collection = database.getCollection("content_items");
-        Document item = collection.find(new BasicDBObject("_id", new ObjectId(idFrom(location)))).first();
-        if (item != null) {
-            return item.getString("title");
-        }
-
-        return null;
+        return collection.find(new BasicDBObject("_id", new ObjectId(idFrom(location)))).first();
     }
 
     private String idFrom(String location) {

@@ -27,7 +27,8 @@ public class MongoMetadataRepository implements MetadataRepository {
     @Override
     public String save(ContentItem contentItem) {
         MongoCollection<Document> collection = database.getCollection("content_items");
-        Document contentItemDocument = new Document("title", contentItem.getTitle());
+        Document contentItemDocument = new Document("title", contentItem.getTitle())
+                .append("uri", contentItem.getMediaUri());
         collection.insertOne(contentItemDocument);
 
         return contentItemDocument.getObjectId("_id").toString();

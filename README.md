@@ -45,25 +45,33 @@ Monitoring endpoint
 ----
 GET /private/health
 
-```http://localhost:8080/private/health```
-
-```http://hub-admin.herokuapp.com/private/health```
-
+e.g.
+```
+http://localhost:8080/private/health
+http://hub-admin.herokuapp.com/private/health
+```
 
 Environment variable required by the application
 ----
-MONGODB_CONNECTION_URI - The MongoDb conneciton string
-e.g. 
+MONGODB_CONNECTION_URI - The MongoDb connection string. Defaults to mongodb://localhost:27017
+e.g. mongodb:foo:<key>==@bar.documents.azure.com:10250/?ssl=true
+
+AZURE_BLOB_STORE_CONNECTION_URI - The Azure blob store connection string. 
+e.g. DefaultEndpointsProtocol=http;AccountName=<account name>;AccountKey=<key>
+
+AZURE_BLOB_STORE_PUBLIC_URL_BASE - The base URL for items in the blob store.   
+e.g. https://<account name>.blob.core.windows.net/content-items/
 
 Environment variable required by the functional tests
 ----
 APPLICATION_HOSTNAME - The hostname that the application is running on. Defaults to 'localhost'
-
+e.g. hub-admin.herokuapp.com
 
 APPLICATION_PORT - The port where the application is running. Defaults to 8080
 e.g. 80
  
-MONGODB_CONNECTION_URI - The MongoDb conneciton string. Defaults to mongodb://localhost:27017
-e.g. mongodb:foo:<key>==@bar.documents.azure.com:10250/?ssl=true
+MONGODB_CONNECTION_URI - The MongoDb connection string. Defaults to mongodb://localhost:27017
+e.g. mongodb:<user>:<key>==@bar.documents.azure.com:10250/?ssl=true
+
 
 
