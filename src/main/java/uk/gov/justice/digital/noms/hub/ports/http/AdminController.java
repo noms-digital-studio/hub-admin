@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,6 +30,7 @@ public class AdminController {
         this.mediaRepository = mediaRepository;
     }
 
+    @CrossOrigin(origins = "https://noms-digital-studio.github.io/hub-admin-ui/")
     @PostMapping("/content-items")
     public ResponseEntity saveFileAndMetadata(@RequestParam("file") MultipartFile file,
                                               @RequestParam("title") String title,
