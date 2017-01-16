@@ -33,6 +33,7 @@ dependencies {
     compile 'org.springframework.boot:spring-boot-starter-web'
     compile 'org.springframework.boot:spring-boot-devtools'
     compile 'org.springframework.boot:spring-boot-configuration-processor'
+    compile 'org.springframework.boot:spring-boot-starter-actuator'
     compile 'ch.qos.logback:logback-core:1.1.7'
     compile 'org.mongodb:mongodb-driver:3.4.1'
     compile 'com.microsoft.azure:azure-storage:4.0.0'

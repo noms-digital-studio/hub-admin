@@ -30,28 +30,13 @@ import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
 
-public class UploadImageTest {
+public class UploadImageTest extends BaseTest {
     private static final String IMAGE_FILE_NAME = "hub-admin-1-pixel.png";
     private static final String CONTAINER_NAME = "content-items";
 
-    private String hostname;
-    private String port;
     private MongoDatabase database;
     private CloudBlobContainer container;
     private String azurePublicUrlBase;
-
-    @Before
-    public void readHostnameAndPort() {
-        hostname = System.getenv("APPLICATION_HOSTNAME");
-        if (hostname == null || hostname.isEmpty()) {
-            hostname = "localhost";
-        }
-
-        port = System.getenv("APPLICATION_PORT");
-        if (port == null || port.isEmpty()) {
-            port = "8080";
-        }
-    }
 
     @Before
     public void connectToMongoDb() {
