@@ -11,7 +11,7 @@ import uk.gov.justice.digital.noms.hub.domain.MetadataRepository;
 
 @Repository
 public class MongoMetadataRepository implements MetadataRepository {
-    private static final String COLLECTION_NAME = "contentItems";
+    private static final String COLLECTION_NAME = "contentItem";
 
     private final MongoDatabase database;
 

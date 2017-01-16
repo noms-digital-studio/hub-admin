@@ -30,7 +30,7 @@ import static org.assertj.core.data.MapEntry.entry;
 public class UploadImageTest extends BaseTest {
     private static final String IMAGE_FILE_NAME = "hub-admin-1-pixel.png";
     private static final String AZURE_CONTAINER_NAME = "content-items";
-    private static final String MONGO_COLLECTION_NAME = "contentItems";
+    private static final String MONGO_COLLECTION_NAME = "contentItem";
 
     private MongoDatabase database;
     private CloudBlobContainer container;
