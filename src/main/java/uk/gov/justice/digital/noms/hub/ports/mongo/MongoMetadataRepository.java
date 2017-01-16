@@ -11,6 +11,7 @@ import uk.gov.justice.digital.noms.hub.domain.MetadataRepository;
 
 @Repository
 public class MongoMetadataRepository implements MetadataRepository {
+    private static final String COLLECTION_NAME = "contentItems";
 
     private final MongoDatabase database;
 
@@ -26,7 +27,7 @@ public class MongoMetadataRepository implements MetadataRepository {
 
     @Override
     public String save(ContentItem contentItem) {
-        MongoCollection<Document> collection = database.getCollection("content_items");
+        MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
         Document contentItemDocument = new Document("title", contentItem.getTitle())
                 .append("uri", contentItem.getMediaUri());
         collection.insertOne(contentItemDocument);

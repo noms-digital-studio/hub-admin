@@ -29,7 +29,8 @@ import static org.assertj.core.data.MapEntry.entry;
 
 public class UploadImageTest extends BaseTest {
     private static final String IMAGE_FILE_NAME = "hub-admin-1-pixel.png";
-    private static final String CONTAINER_NAME = "content-items";
+    private static final String AZURE_CONTAINER_NAME = "content-items";
+    private static final String MONGO_COLLECTION_NAME = "contentItems";
 
     private MongoDatabase database;
     private CloudBlobContainer container;
@@ -60,7 +61,7 @@ public class UploadImageTest extends BaseTest {
 
         CloudStorageAccount storageAccount = CloudStorageAccount.parse(azureConnectionUri);
         CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
-        container = blobClient.getContainerReference(CONTAINER_NAME);
+        container = blobClient.getContainerReference(AZURE_CONTAINER_NAME);
         container.createIfNotExists();
 
         BlobContainerPermissions containerPermissions = new BlobContainerPermissions();
@@ -89,7 +90,7 @@ public class UploadImageTest extends BaseTest {
 
         Document document = theDocumentInTheMongoDbFor(theContentItemResource);
         assertThat(document).contains(entry("title", "A one pixel image"));
-        assertThat(document).contains(entry("uri", format("%s/%s/%s", azurePublicUrlBase, CONTAINER_NAME, IMAGE_FILE_NAME)));
+        assertThat(document).contains(entry("uri", format("%s/%s/%s", azurePublicUrlBase, AZURE_CONTAINER_NAME, IMAGE_FILE_NAME)));
 
         HttpResponse<String> imageResponse = Unirest.get(document.getString("uri")).asString();
         assertThat(imageResponse.getStatus()).isEqualTo(HttpStatus.OK.value());
@@ -115,7 +116,7 @@ public class UploadImageTest extends BaseTest {
     }
 
     private Document theDocumentInTheMongoDbFor(String location) {
-        MongoCollection<Document> collection = database.getCollection("content_items");
+        MongoCollection<Document> collection = database.getCollection(MONGO_COLLECTION_NAME);
         return collection.find(new BasicDBObject("_id", new ObjectId(idFrom(location)))).first();
     }
 
