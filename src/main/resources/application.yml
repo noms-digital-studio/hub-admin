@@ -1,0 +1,7 @@
+endpoints:
+    enabled: false
+    health:
+        enabled: ${hubadminfeed.endpoints.health.enabled:true}
+    metrics:
+        enabled: ${hubadminfeed.endpoints.metrics.enabled:true}
+---

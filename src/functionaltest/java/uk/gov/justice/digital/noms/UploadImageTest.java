@@ -16,10 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.security.DigestInputStream;
 import java.security.InvalidKeyException;
@@ -75,9 +72,7 @@ public class UploadImageTest extends BaseTest {
     public void uploadsImageAndTitleSuccessfully() throws Exception {
         // Given
         theImageDoesNotExistInAzure();
-
-        // get MD5
-        byte[] originalMd5 = mD5For(new FileInputStream(new File(getClass().getResource("/" + IMAGE_FILE_NAME).toURI())));
+        byte[] originalMd5 = mD5For(originalFileInputStream());
 
         // when
         HttpResponse<String> response = Unirest.post("http://" + hostname + ":" + port + "/content-items")
@@ -99,6 +94,10 @@ public class UploadImageTest extends BaseTest {
         HttpResponse<String> imageResponse = Unirest.get(document.getString("uri")).asString();
         assertThat(imageResponse.getStatus()).isEqualTo(HttpStatus.OK.value());
         assertThat(mD5For(imageResponse.getRawBody())).isEqualTo(originalMd5);
+    }
+
+    private FileInputStream originalFileInputStream() throws FileNotFoundException, URISyntaxException {
+        return new FileInputStream(new File(getClass().getResource("/" + IMAGE_FILE_NAME).toURI()));
     }
 
     private byte[] mD5For(InputStream is) throws URISyntaxException, NoSuchAlgorithmException, IOException {
