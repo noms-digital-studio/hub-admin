@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.noms.hub.ports.mongo;
 
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -21,6 +22,7 @@ public class MongoMetadataRepository implements MetadataRepository {
             mongoConnectionUri = "mongodb://localhost:27017";
         }
 
+        MongoClientOptions mongoClientOptions = MongoClientOptions.builder().build();
         MongoClient mongoClient = new MongoClient(new MongoClientURI(mongoConnectionUri));
         database = mongoClient.getDatabase("hub_metadata");
     }
