@@ -8,3 +8,7 @@ endpoints:
     metrics:
         enabled: ${hubadmin.endpoints.metrics.enabled:true}
 
+spring:
+  http:
+    multipart:
+      max-file-size: 5MB
