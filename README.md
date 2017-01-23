@@ -73,13 +73,9 @@ e.g. https://<account name>.blob.core.windows.net
 Environment variable required by the functional tests
 ----
 ```
-APPLICATION_HOSTNAME - The hostname that the application is running on. Defaults to 'localhost'
-e.g. hub-admin.herokuapp.com
+APPLICATION_URL - The transport, host, port and context path that the application is running on. Default to http://localhost:8080/hun-admin
+e.g. https://hub-admin.herokuapp.com/hub-admin
 ```
-```
-APPLICATION_PORT - The port where the application is running. Defaults to 8080
-e.g. 80
-``` 
 
 ```
 MONGODB_CONNECTION_URI - The MongoDb connection string. Defaults to mongodb://localhost:27017

@@ -12,7 +12,7 @@ public class StatusEndPointTest extends BaseTest {
     @Test
     public void statusEndpointReturnsSuccess() throws Exception {
         // when
-        HttpResponse<JsonNode> response = Unirest.get("http://" + hostname + ":" + port + "/health").asJson();
+        HttpResponse<JsonNode> response = Unirest.get(applicationUrl + "/health").asJson();
 
         // then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());

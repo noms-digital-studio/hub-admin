@@ -1,7 +1,10 @@
+server:
+    contextPath: ${hubadmin.contextpath:/hub-admin}
+
 endpoints:
     enabled: false
     health:
-        enabled: ${hubadminfeed.endpoints.health.enabled:true}
+        enabled: ${hubadmin.endpoints.health.enabled:true}
     metrics:
-        enabled: ${hubadminfeed.endpoints.metrics.enabled:true}
----
+        enabled: ${hubadmin.endpoints.metrics.enabled:true}
+

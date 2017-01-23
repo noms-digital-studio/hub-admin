@@ -3,19 +3,13 @@ package uk.gov.justice.digital.noms;
 import org.junit.Before;
 
 public class BaseTest {
-    protected String hostname;
-    protected String port;
+    protected String applicationUrl;
 
     @Before
     public void readHostnameAndPort() {
-        hostname = System.getenv("APPLICATION_HOSTNAME");
-        if (hostname == null || hostname.isEmpty()) {
-            hostname = "localhost";
-        }
-
-        port = System.getenv("APPLICATION_PORT");
-        if (port == null || port.isEmpty()) {
-            port = "8080";
+        applicationUrl = System.getenv("APPLICATION_URL");
+        if (applicationUrl == null || applicationUrl.isEmpty()) {
+            applicationUrl = "http://localhost:8080/hub-admin";
         }
     }
 

@@ -76,7 +76,7 @@ public class UploadImageTest extends BaseTest {
         byte[] originalMd5 = mD5For(originalFileInputStream());
 
         // when
-        HttpResponse<String> response = Unirest.post("http://" + hostname + ":" + port + "/content-items")
+        HttpResponse<String> response = Unirest.post(applicationUrl + "/content-items")
                 .header("accept", "application/json")
                 .field("title", "A one pixel image")
                 .field("file", new File(this.getClass().getResource("/" + IMAGE_FILE_NAME).toURI()))
