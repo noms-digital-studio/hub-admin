@@ -5,10 +5,12 @@ import java.util.Objects;
 public class ContentItem {
     private final String title;
     private final String mediaUri;
+    private final String filename;
 
-    public ContentItem(String title, String mediaUri) {
+    public ContentItem(String title, String mediaUri, String filename) {
         this.title = title;
         this.mediaUri = mediaUri;
+        this.filename = filename;
     }
 
     public String getTitle() {
@@ -17,6 +19,10 @@ public class ContentItem {
 
     public String getMediaUri() {
         return mediaUri;
+    }
+
+    public String getFilename() {
+        return filename;
     }
 
     @Override
@@ -32,4 +38,5 @@ public class ContentItem {
     public int hashCode() {
         return Objects.hash(title, mediaUri);
     }
+
 }

@@ -31,7 +31,9 @@ public class MongoMetadataRepository implements MetadataRepository {
     public String save(ContentItem contentItem) {
         MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
         Document contentItemDocument = new Document("title", contentItem.getTitle())
-                .append("uri", contentItem.getMediaUri());
+                .append("uri", contentItem.getMediaUri())
+                .append("filename", contentItem.getFilename());
+
         collection.insertOne(contentItemDocument);
 
         return contentItemDocument.getObjectId("_id").toString();

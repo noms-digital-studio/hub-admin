@@ -60,7 +60,7 @@ public class AdminControllerTest {
     private String aMetadataRepositoryThatReturnsAnId(String uri) {
         when(file.getOriginalFilename()).thenReturn("aFilename");
         String id = UUID.randomUUID().toString();
-        when(mongoMetadataRepository.save(new ContentItem("aTitle", uri))).thenReturn(id);
+        when(mongoMetadataRepository.save(new ContentItem("aTitle", uri, "aFilename"))).thenReturn(id);
         return id;
     }
 }

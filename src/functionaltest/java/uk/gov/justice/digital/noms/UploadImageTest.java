@@ -90,6 +90,7 @@ public class UploadImageTest extends BaseTest {
 
         Document document = theDocumentInTheMongoDbFor(theContentItemResource);
         assertThat(document).contains(entry("title", "A one pixel image"));
+        assertThat(document).contains(entry("filename", IMAGE_FILE_NAME));
         assertThat(document).contains(entry("uri", format("%s/%s/%s", azurePublicUrlBase, AZURE_CONTAINER_NAME, IMAGE_FILE_NAME)));
 
         HttpResponse<String> imageResponse = Unirest.get(document.getString("uri")).asString();

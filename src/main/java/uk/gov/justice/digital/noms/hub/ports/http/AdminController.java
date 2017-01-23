@@ -37,9 +37,7 @@ public class AdminController {
         log.info("file size: " + file.getSize());
 
         String mediaUri = mediaRepository.save(file.getInputStream(), file.getOriginalFilename(), file.getSize());
-        String id = metadataRepository.save(new ContentItem(title, mediaUri));
-
-
+        String id = metadataRepository.save(new ContentItem(title, mediaUri, file.getOriginalFilename()));
 
         return new ResponseEntity<Void>(createLocationHeader(uriComponentsBuilder, id), HttpStatus.CREATED);
     }
