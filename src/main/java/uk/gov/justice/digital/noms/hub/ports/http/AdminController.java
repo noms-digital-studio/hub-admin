@@ -1,11 +1,12 @@
 package uk.gov.justice.digital.noms.hub.ports.http;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -15,9 +16,9 @@ import uk.gov.justice.digital.noms.hub.domain.MetadataRepository;
 
 import java.io.IOException;
 
+@Slf4j
 @RestController
 public class AdminController {
-    private static final Logger log = LoggerFactory.getLogger(AdminController.class);
 
     private final MetadataRepository metadataRepository;
     private final MediaRepository mediaRepository;

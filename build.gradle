@@ -38,6 +38,8 @@ dependencies {
     compile 'org.mongodb:mongodb-driver:3.4.1'
     compile 'com.microsoft.azure:azure-storage:4.0.0'
 
+    compileOnly 'org.projectlombok:lombok:1.16.10'
+
     testCompile 'org.assertj:assertj-core:3.6.1'
     testCompile 'org.mockito:mockito-all:1.9.5'
     testCompile 'org.springframework.boot:spring-boot-starter-test'
