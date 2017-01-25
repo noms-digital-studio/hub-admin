@@ -6,6 +6,7 @@ import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
+import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.springframework.stereotype.Repository;
 import uk.gov.justice.digital.noms.hub.domain.ContentItem;
@@ -14,6 +15,7 @@ import uk.gov.justice.digital.noms.hub.domain.MetadataRepository;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.ReturnDocument.AFTER;
 
+@Slf4j
 @Repository
 public class MongoMetadataRepository implements MetadataRepository {
     private static final String COLLECTION_NAME = "contentItem";
@@ -41,7 +43,9 @@ public class MongoMetadataRepository implements MetadataRepository {
         if (updatedDocument != null) {
             return updatedDocument.getObjectId("_id").toString();
         } else {
-            throw new RuntimeException("No metadata record found for: " + contentItem.getFilename());
+            String message = "No metadata record found for: " + contentItem.getFilename();
+            log.error(message);
+            throw new RuntimeException(message);
         }
     }
 
