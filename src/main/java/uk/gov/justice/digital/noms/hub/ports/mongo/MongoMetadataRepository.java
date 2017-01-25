@@ -35,7 +35,7 @@ public class MongoMetadataRepository implements MetadataRepository {
         MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
         Document updatedDocument = collection
                 .findOneAndUpdate(eq("filename", contentItem.getFilename()),
-                                  anUpdateFor(collection, contentItem),
+                                  anUpdateFor(contentItem),
                                   upsertOptions());
 
         if (updatedDocument != null) {
@@ -45,7 +45,7 @@ public class MongoMetadataRepository implements MetadataRepository {
         }
     }
 
-    private BasicDBObject anUpdateFor(MongoCollection<Document> collection, ContentItem contentItem) {
+    private BasicDBObject anUpdateFor(ContentItem contentItem) {
         BasicDBObject contentItemDocument = new BasicDBObject("title", contentItem.getTitle())
                 .append("uri", contentItem.getMediaUri())
                 .append("filename", contentItem.getFilename());
