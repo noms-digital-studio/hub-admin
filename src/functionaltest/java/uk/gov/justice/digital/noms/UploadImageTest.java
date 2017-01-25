@@ -2,6 +2,7 @@ package uk.gov.justice.digital.noms;
 
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.*;
@@ -10,6 +11,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.result.DeleteResult;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.junit.Before;
@@ -23,6 +25,7 @@ import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import static com.mongodb.client.model.Filters.eq;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
@@ -70,17 +73,31 @@ public class UploadImageTest extends BaseTest {
     }
 
     @Test
-    public void uploadsImageAndTitleSuccessfully() throws Exception {
-        // Given
+    public void uploadsANewImageAndTitleSuccessfully() throws Exception {
+        // given
         theImageDoesNotExistInAzure();
-        byte[] originalMd5 = mD5For(originalFileInputStream());
+        theImageMetadataDoesNotExistInMongoDb();
 
+        performAndValidateFileUpload();
+    }
+
+    @Test
+    public void uploadsAnExistingImageAndTitleSuccessfully() throws Exception {
+        // given
+        theImageDoesExistInAzure();
+        theImageMetadataDoesExistInMongoDb();
+
+        performAndValidateFileUpload();
+    }
+
+    private void performAndValidateFileUpload() throws UnirestException, URISyntaxException, IOException, NoSuchAlgorithmException {
         // when
-        HttpResponse<String> response = Unirest.post(applicationUrl + "/content-items")
-                .header("accept", "application/json")
-                .field("title", "A one pixel image")
-                .field("file", new File(this.getClass().getResource("/" + IMAGE_FILE_NAME).toURI()))
-                .asString();
+        HttpResponse<String> response =
+                Unirest.post(applicationUrl + "/content-items")
+                        .header("accept", "application/json")
+                        .field("title", "A one pixel image")
+                        .field("file", getOriginalFile(IMAGE_FILE_NAME))
+                        .asString();
 
         // then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.CREATED.value());
@@ -95,25 +112,50 @@ public class UploadImageTest extends BaseTest {
 
         HttpResponse<String> imageResponse = Unirest.get(document.getString("uri")).asString();
         assertThat(imageResponse.getStatus()).isEqualTo(HttpStatus.OK.value());
-        assertThat(mD5For(imageResponse.getRawBody())).isEqualTo(originalMd5);
+        assertThat(mD5For(imageResponse.getRawBody())).isEqualTo(mD5For(originalFileInputStream()));
     }
 
     private FileInputStream originalFileInputStream() throws FileNotFoundException, URISyntaxException {
-        return new FileInputStream(new File(getClass().getResource("/" + IMAGE_FILE_NAME).toURI()));
+        return new FileInputStream(getOriginalFile(IMAGE_FILE_NAME));
+    }
+
+    private File getOriginalFile(String filename) throws URISyntaxException {
+        return new File(this.getClass().getResource("/" + filename).toURI());
     }
 
     private byte[] mD5For(InputStream is) throws URISyntaxException, NoSuchAlgorithmException, IOException {
         MessageDigest md = MessageDigest.getInstance("MD5");
-        try (DigestInputStream dis = new DigestInputStream(is, md))
-        {
-            while (dis.read() != -1) {}
+        try (DigestInputStream dis = new DigestInputStream(is, md)) {
+            while (dis.read() != -1) {
+            }
         }
         return md.digest();
+    }
+
+    private void theImageDoesExistInAzure() throws URISyntaxException, StorageException, IOException {
+        CloudBlockBlob blob = container.getBlockBlobReference(IMAGE_FILE_NAME);
+        blob.upload(originalFileInputStream(), getOriginalFile(IMAGE_FILE_NAME).length());
     }
 
     private void theImageDoesNotExistInAzure() throws URISyntaxException, StorageException {
         CloudBlockBlob blob = container.getBlockBlobReference(IMAGE_FILE_NAME);
         blob.deleteIfExists();
+    }
+
+    private void theImageMetadataDoesNotExistInMongoDb() {
+        MongoCollection<Document> collection = database.getCollection(MONGO_COLLECTION_NAME);
+        DeleteResult result = collection.deleteOne(eq("filename", IMAGE_FILE_NAME));
+        assertThat(result.wasAcknowledged()).isTrue();
+    }
+
+    private void theImageMetadataDoesExistInMongoDb() {
+        MongoCollection<Document> collection = database.getCollection(MONGO_COLLECTION_NAME);
+        Document contentItemDocument = new Document("title", "aTitle")
+                .append("uri", "aUri")
+                .append("filename", IMAGE_FILE_NAME);
+
+        collection.insertOne(contentItemDocument);
+        assertThat(contentItemDocument.get("_id")).isNotNull();
     }
 
     private Document theDocumentInTheMongoDbFor(String location) {
