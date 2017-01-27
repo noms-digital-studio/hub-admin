@@ -31,16 +31,22 @@ public class AdminController {
     @PostMapping("/content-items")
     public ResponseEntity saveFileAndMetadata(@RequestParam("file") MultipartFile file,
                                               @RequestParam("title") String title,
+                                              @RequestParam("category") String category,
                                               UriComponentsBuilder uriComponentsBuilder) throws IOException {
 
-        log.info("title: " + title);
-        log.info("filename: " + file.getOriginalFilename());
-        log.info("file size: " + file.getSize());
+        logParameters(file, title, category);
 
         String mediaUri = mediaRepository.save(file.getInputStream(), file.getOriginalFilename(), file.getSize());
-        String id = metadataRepository.save(new ContentItem(title, mediaUri, file.getOriginalFilename()));
+        String id = metadataRepository.save(new ContentItem(title, mediaUri, file.getOriginalFilename(), category));
 
         return new ResponseEntity<Void>(createLocationHeader(uriComponentsBuilder, id), HttpStatus.CREATED);
+    }
+
+    private void logParameters(@RequestParam("file") MultipartFile file, @RequestParam("title") String title, @RequestParam("category") String category) {
+        log.info("title: " + title);
+        log.info("category: " + category);
+        log.info("filename: " + file.getOriginalFilename());
+        log.info("file size: " + file.getSize());
     }
 
     private HttpHeaders createLocationHeader(UriComponentsBuilder uriComponentsBuilder, String id) {

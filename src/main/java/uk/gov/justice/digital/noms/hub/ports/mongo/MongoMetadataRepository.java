@@ -50,9 +50,11 @@ public class MongoMetadataRepository implements MetadataRepository {
     }
 
     private BasicDBObject anUpdateFor(ContentItem contentItem) {
-        BasicDBObject contentItemDocument = new BasicDBObject("title", contentItem.getTitle())
-                .append("uri", contentItem.getMediaUri())
-                .append("filename", contentItem.getFilename());
+        BasicDBObject contentItemDocument =
+                new BasicDBObject("title", contentItem.getTitle())
+                          .append("uri", contentItem.getMediaUri())
+                          .append("filename", contentItem.getFilename())
+                          .append("category", contentItem.getCategory());
 
         return new BasicDBObject("$set", contentItemDocument);
     }

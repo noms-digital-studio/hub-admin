@@ -32,8 +32,10 @@ import static org.assertj.core.data.MapEntry.entry;
 
 public class UploadImageTest extends BaseTest {
     private static final String IMAGE_FILE_NAME = "hub-admin-1-pixel.png";
+    private static final String IMAGE_TITLE = "A one pixel image";
     private static final String AZURE_CONTAINER_NAME = "content-items";
     private static final String MONGO_COLLECTION_NAME = "contentItem";
+    private static final String IMAGE_CATEGORY = "A category";
 
     private MongoDatabase database;
     private CloudBlobContainer container;
@@ -95,7 +97,8 @@ public class UploadImageTest extends BaseTest {
         HttpResponse<String> response =
                 Unirest.post(applicationUrl + "/content-items")
                         .header("accept", "application/json")
-                        .field("title", "A one pixel image")
+                        .field("title", IMAGE_TITLE)
+                        .field("category", IMAGE_CATEGORY)
                         .field("file", getOriginalFile(IMAGE_FILE_NAME))
                         .asString();
 
@@ -106,8 +109,9 @@ public class UploadImageTest extends BaseTest {
         assertThat(theContentItemResource).contains("/content-items/");
 
         Document document = theDocumentInTheMongoDbFor(theContentItemResource);
-        assertThat(document).contains(entry("title", "A one pixel image"));
+        assertThat(document).contains(entry("title", IMAGE_TITLE));
         assertThat(document).contains(entry("filename", IMAGE_FILE_NAME));
+        assertThat(document).contains(entry("category", IMAGE_CATEGORY));
         assertThat(document).contains(entry("uri", format("%s/%s/%s", azurePublicUrlBase, AZURE_CONTAINER_NAME, IMAGE_FILE_NAME)));
 
         HttpResponse<String> imageResponse = Unirest.get(document.getString("uri")).asString();
@@ -152,6 +156,7 @@ public class UploadImageTest extends BaseTest {
         MongoCollection<Document> collection = database.getCollection(MONGO_COLLECTION_NAME);
         Document contentItemDocument = new Document("title", "aTitle")
                 .append("uri", "aUri")
+                .append("category", "acategory")
                 .append("filename", IMAGE_FILE_NAME);
 
         collection.insertOne(contentItemDocument);

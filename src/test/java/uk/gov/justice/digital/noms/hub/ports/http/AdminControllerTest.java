@@ -23,6 +23,9 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AdminControllerTest {
+    private static final String TITLE = "aTitle";
+    private static final String FILENAME = "aFilename";
+    private static final String CATEGORY = "aCategory";
     private AdminController adminController;
 
     @Mock private MediaRepository mediaRepository;
@@ -41,7 +44,8 @@ public class AdminControllerTest {
         String id = aMetadataRepositoryThatReturnsAnId(uri);
 
         // when
-        ResponseEntity responseEntity = adminController.saveFileAndMetadata(file, "aTitle", UriComponentsBuilder.newInstance());
+        ResponseEntity responseEntity =
+                adminController.saveFileAndMetadata(file, TITLE, CATEGORY, UriComponentsBuilder.newInstance());
 
         // then
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(HttpStatus.SC_CREATED);
@@ -53,14 +57,14 @@ public class AdminControllerTest {
         when(file.getInputStream()).thenReturn(io);
         when(file.getSize()).thenReturn(0L);
         String uri = "aUri";
-        when(mediaRepository.save(io, "aFilename", 0L)).thenReturn(uri);
+        when(mediaRepository.save(io, FILENAME, 0L)).thenReturn(uri);
         return uri;
     }
 
     private String aMetadataRepositoryThatReturnsAnId(String uri) {
-        when(file.getOriginalFilename()).thenReturn("aFilename");
+        when(file.getOriginalFilename()).thenReturn(FILENAME);
         String id = UUID.randomUUID().toString();
-        when(mongoMetadataRepository.save(new ContentItem("aTitle", uri, "aFilename"))).thenReturn(id);
+        when(mongoMetadataRepository.save(new ContentItem(TITLE, uri, FILENAME, CATEGORY))).thenReturn(id);
         return id;
     }
 }
