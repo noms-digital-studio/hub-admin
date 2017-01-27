@@ -53,6 +53,26 @@ Request:
 
 ```curl http://localhost:8080/hub-admin/content-items```
 
+Response:
+```
+
+  {
+    "id": "588b6821aba1db4eb9d87cb3",
+    "title": "aUri1",
+    "mediaUri": "aTitle1",
+    "filename": "hub-admin-1-pixel.png",
+    "category": "aCategory1"
+  },
+  {
+    "id": "588b6821aba1db4eb9d87cb4",
+    "title": "aUri2",
+    "mediaUri": "aTitle2",
+    "filename": "hub-admin-2-pixel.png",
+    "category": "aCategory2"
+  }
+]
+```
+
 Monitoring endpoint
 ----
 GET /hub-admin/health
