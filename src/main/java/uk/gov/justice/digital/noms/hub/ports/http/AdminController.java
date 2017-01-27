@@ -4,9 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -15,6 +13,7 @@ import uk.gov.justice.digital.noms.hub.domain.MediaRepository;
 import uk.gov.justice.digital.noms.hub.domain.MetadataRepository;
 
 import java.io.IOException;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -40,6 +39,11 @@ public class AdminController {
         String id = metadataRepository.save(new ContentItem(title, mediaUri, file.getOriginalFilename(), category));
 
         return new ResponseEntity<Void>(createLocationHeader(uriComponentsBuilder, id), HttpStatus.CREATED);
+    }
+
+    @GetMapping("/content-items")
+    public @ResponseBody List<ContentItem>findAll() {
+        return metadataRepository.findAll();
     }
 
     private void logParameters(@RequestParam("file") MultipartFile file, @RequestParam("title") String title, @RequestParam("category") String category) {

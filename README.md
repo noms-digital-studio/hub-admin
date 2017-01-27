@@ -12,7 +12,7 @@ National Offender Management Service.
 
 Content upload endpoint
 ----
-POST /content-items 
+POST /hub-admin/content-items 
 Multipart form endpoint that takes a 'file' and a 'title'
 
 Examples
@@ -43,14 +43,24 @@ Response:
 * Connection #0 to host localhost left intact
 ```
 
+Content Items list endpoint
+----
+GET /hub-admin/content-items
+
+Examples
+----
+Request:
+
+```curl http://localhost:8080/hub-admin/content-items```
+
 Monitoring endpoint
 ----
-GET /health
+GET /hub-admin/health
 
 e.g.
 ```
-http://localhost:8080/health
-http://hub-admin.herokuapp.com/health
+http://localhost:8080/hub-admin/health
+http://hub-admin.herokuapp.com/hub-admin/health
 ```
 
 Environment variable required by the application

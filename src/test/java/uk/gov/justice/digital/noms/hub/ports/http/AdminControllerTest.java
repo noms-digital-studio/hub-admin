@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.noms.hub.ports.http;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.http.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,6 +17,7 @@ import uk.gov.justice.digital.noms.hub.ports.mongo.MongoMetadataRepository;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -50,6 +52,32 @@ public class AdminControllerTest {
         // then
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(HttpStatus.SC_CREATED);
         assertThat(responseEntity.getHeaders().get("Location").get(0)).isEqualTo("/content-items/" + id);
+    }
+
+    @Test
+    public void getsTheListOfContentMetadata() {
+        // given
+        List<ContentItem> expectedContentItems = someContentItems();
+        aMetadataRepositoryThatReturnsAListOfItems(expectedContentItems);
+
+        // when
+        List<ContentItem> contentItems = adminController.findAll();
+
+        // then
+        assertThat(contentItems).isEqualTo(expectedContentItems);
+    }
+
+    private void aMetadataRepositoryThatReturnsAListOfItems(List<ContentItem> contentItems) {
+        when(mongoMetadataRepository.findAll()).thenReturn(contentItems);
+    }
+
+    private List<ContentItem> someContentItems() {
+        return ImmutableList
+                .of(aContentItem(), aContentItem());
+    }
+
+    private ContentItem aContentItem() {
+        return new ContentItem(UUID.randomUUID().toString(), "aTitle", "aUri", "aFilename", "aCategory");
     }
 
     private String aMediaRepositoryThatReturnsAUri() throws IOException {

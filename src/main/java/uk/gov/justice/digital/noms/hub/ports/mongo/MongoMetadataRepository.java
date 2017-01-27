@@ -3,6 +3,7 @@ package uk.gov.justice.digital.noms.hub.ports.mongo;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
@@ -11,6 +12,9 @@ import org.bson.Document;
 import org.springframework.stereotype.Repository;
 import uk.gov.justice.digital.noms.hub.domain.ContentItem;
 import uk.gov.justice.digital.noms.hub.domain.MetadataRepository;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.ReturnDocument.AFTER;
@@ -37,8 +41,8 @@ public class MongoMetadataRepository implements MetadataRepository {
         MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
         Document updatedDocument = collection
                 .findOneAndUpdate(eq("filename", contentItem.getFilename()),
-                                  anUpdateFor(contentItem),
-                                  upsertOptions());
+                        anUpdateFor(contentItem),
+                        upsertOptions());
 
         if (updatedDocument != null) {
             return updatedDocument.getObjectId("_id").toString();
@@ -49,12 +53,40 @@ public class MongoMetadataRepository implements MetadataRepository {
         }
     }
 
+    @Override
+    public List<ContentItem> findAll() {
+        List<ContentItem> result = new ArrayList<>();
+        MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
+        FindIterable<Document> documents = collection.find();
+        for (Document document : documents) {
+            //  title, String mediaUri, String filename, String category
+            ContentItem contentItem =
+                    new ContentItem(getValueFor(document, "_id"),
+                            getValueFor(document, "uri"),
+                            getValueFor(document, "title"),
+                            getValueFor(document, "filename"),
+                            getValueFor(document, "category"));
+            result.add(contentItem);
+        }
+
+        return result;
+    }
+
+    private String getValueFor(Document document, String key) {
+        Object o = document.get(key);
+        if (o != null) {
+            return o.toString();
+        } else {
+            return "";
+        }
+    }
+
     private BasicDBObject anUpdateFor(ContentItem contentItem) {
         BasicDBObject contentItemDocument =
                 new BasicDBObject("title", contentItem.getTitle())
-                          .append("uri", contentItem.getMediaUri())
-                          .append("filename", contentItem.getFilename())
-                          .append("category", contentItem.getCategory());
+                        .append("uri", contentItem.getMediaUri())
+                        .append("filename", contentItem.getFilename())
+                        .append("category", contentItem.getCategory());
 
         return new BasicDBObject("$set", contentItemDocument);
     }

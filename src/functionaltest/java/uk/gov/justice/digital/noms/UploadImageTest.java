@@ -96,7 +96,6 @@ public class UploadImageTest extends BaseTest {
         // when
         HttpResponse<String> response =
                 Unirest.post(applicationUrl + "/content-items")
-                        .header("accept", "application/json")
                         .field("title", IMAGE_TITLE)
                         .field("category", IMAGE_CATEGORY)
                         .field("file", getOriginalFile(IMAGE_FILE_NAME))
@@ -156,7 +155,7 @@ public class UploadImageTest extends BaseTest {
         MongoCollection<Document> collection = database.getCollection(MONGO_COLLECTION_NAME);
         Document contentItemDocument = new Document("title", "aTitle")
                 .append("uri", "aUri")
-                .append("category", "acategory")
+                .append("category", "aCategory")
                 .append("filename", IMAGE_FILE_NAME);
 
         collection.insertOne(contentItemDocument);

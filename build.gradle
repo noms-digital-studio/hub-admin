@@ -37,6 +37,7 @@ dependencies {
     compile 'ch.qos.logback:logback-core:1.1.7'
     compile 'org.mongodb:mongodb-driver:3.4.1'
     compile 'com.microsoft.azure:azure-storage:4.0.0'
+    compile 'com.google.guava:guava:21.0'
 
     compileOnly 'org.projectlombok:lombok:1.16.10'
 
