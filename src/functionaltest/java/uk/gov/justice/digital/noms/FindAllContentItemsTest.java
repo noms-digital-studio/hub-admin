@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.noms;
 
+import com.google.common.collect.ImmutableList;
+import com.jayway.jsonpath.JsonPath;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
@@ -7,11 +9,8 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.HttpStatus;
 import org.bson.Document;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -38,7 +37,7 @@ public class FindAllContentItemsTest extends BaseTest {
     @Test
     public void findsAllContentItemsInMetadataStore() throws Exception {
         // given
-        Pair<String, String> ids = metadataExistsInMongoDb();
+        List<String> expectedIds = metadataExistsInMongoDb();
 
         // when
         HttpResponse<JsonNode> response = Unirest.get(applicationUrl + "/content-items")
@@ -47,22 +46,14 @@ public class FindAllContentItemsTest extends BaseTest {
 
         // then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.SC_OK);
-        JSONArray array = response.getBody().getArray();
-        boolean foundFirstItem = false;
-        boolean foundSecondItem = false;
-        for (int i = 0; i < array.length(); i++) {
-            JSONObject object = array.getJSONObject(i);
-            if (object.get("id").toString().equals(ids.getLeft())) {
-                foundFirstItem = true;
-            }
-            if (object.get("id").toString().equals(ids.getRight())) {
-                foundSecondItem = true;
-            }
-        }
-        assertThat(foundFirstItem && foundSecondItem).describedAs("Did not find keys in database: " + ids).isTrue();
+        assertThat(contentIdsFrom(response)).containsAll(expectedIds);
     }
 
-    private Pair<String, String> metadataExistsInMongoDb() {
+    private List<String> contentIdsFrom(HttpResponse<JsonNode> response) {
+        return JsonPath.read(response.getBody().toString(), "$.contentItems[*].id");
+    }
+
+    private List<String> metadataExistsInMongoDb() {
         MongoCollection<Document> collection = database.getCollection(MONGO_COLLECTION_NAME);
         Document contentItemDocument1 = new Document("title", "aTitle1")
                 .append("uri", "aUri1")
@@ -81,6 +72,6 @@ public class FindAllContentItemsTest extends BaseTest {
         collection.insertMany(contentItemDocuments);
         String key1 = contentItemDocuments.get(0).get("_id").toString();
         String key2 = contentItemDocuments.get(1).get("_id").toString();
-        return Pair.of(key1, key2);
+        return ImmutableList.of(key1, key2);
     }
 }

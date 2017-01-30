@@ -38,6 +38,7 @@ dependencies {
     compile 'org.mongodb:mongodb-driver:3.4.1'
     compile 'com.microsoft.azure:azure-storage:4.0.0'
     compile 'com.google.guava:guava:21.0'
+    compile 'com.jayway.jsonpath:json-path-parent:1.1.0'
 
     compileOnly 'org.projectlombok:lombok:1.16.10'
 
@@ -65,4 +66,8 @@ task functionaltest(type: Test) {
         events "passed", "skipped", "failed", "standardOut", "standardError"
         exceptionFormat = 'full'
     }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.1'
 }

@@ -59,17 +59,18 @@ public class MongoMetadataRepository implements MetadataRepository {
         MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
         FindIterable<Document> documents = collection.find();
         for (Document document : documents) {
-            //  title, String mediaUri, String filename, String category
-            ContentItem contentItem =
-                    new ContentItem(getValueFor(document, "_id"),
-                            getValueFor(document, "uri"),
-                            getValueFor(document, "title"),
-                            getValueFor(document, "filename"),
-                            getValueFor(document, "category"));
-            result.add(contentItem);
+            result.add(aContentItemFrom(document));
         }
 
         return result;
+    }
+
+    private ContentItem aContentItemFrom(Document document) {
+        return new ContentItem(getValueFor(document, "_id"),
+                getValueFor(document, "uri"),
+                getValueFor(document, "title"),
+                getValueFor(document, "filename"),
+                getValueFor(document, "category"));
     }
 
     private String getValueFor(Document document, String key) {

@@ -17,7 +17,6 @@ import uk.gov.justice.digital.noms.hub.ports.mongo.MongoMetadataRepository;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -57,23 +56,22 @@ public class AdminControllerTest {
     @Test
     public void getsTheListOfContentMetadata() {
         // given
-        List<ContentItem> expectedContentItems = someContentItems();
+        ContentItemsResponse expectedContentItems = someContentItems();
         aMetadataRepositoryThatReturnsAListOfItems(expectedContentItems);
 
         // when
-        List<ContentItem> contentItems = adminController.findAll();
+        ContentItemsResponse contentItems = adminController.findAll();
 
         // then
         assertThat(contentItems).isEqualTo(expectedContentItems);
     }
 
-    private void aMetadataRepositoryThatReturnsAListOfItems(List<ContentItem> contentItems) {
-        when(mongoMetadataRepository.findAll()).thenReturn(contentItems);
+    private void aMetadataRepositoryThatReturnsAListOfItems(ContentItemsResponse contentItemsResponse) {
+        when(mongoMetadataRepository.findAll()).thenReturn(contentItemsResponse.getContentItems());
     }
 
-    private List<ContentItem> someContentItems() {
-        return ImmutableList
-                .of(aContentItem(), aContentItem());
+    private ContentItemsResponse someContentItems() {
+        return new ContentItemsResponse(ImmutableList.of(aContentItem(), aContentItem()));
     }
 
     private ContentItem aContentItem() {

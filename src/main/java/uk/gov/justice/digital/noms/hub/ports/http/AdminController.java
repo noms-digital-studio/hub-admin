@@ -13,7 +13,6 @@ import uk.gov.justice.digital.noms.hub.domain.MediaRepository;
 import uk.gov.justice.digital.noms.hub.domain.MetadataRepository;
 
 import java.io.IOException;
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -42,8 +41,8 @@ public class AdminController {
     }
 
     @GetMapping("/content-items")
-    public @ResponseBody List<ContentItem>findAll() {
-        return metadataRepository.findAll();
+    public @ResponseBody ContentItemsResponse findAll() {
+        return new ContentItemsResponse(metadataRepository.findAll());
     }
 
     private void logParameters(@RequestParam("file") MultipartFile file, @RequestParam("title") String title, @RequestParam("category") String category) {
