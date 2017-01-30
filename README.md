@@ -19,7 +19,7 @@ Examples
 ----
 Request:
 
-```curl -v -F title=foo -F -Fcategory= "file=@1-pixel.png" http://localhost:8080/hub-admin/content-items```
+```curl -v -F title=foo -F -Fcategory=cat1 "file=@1-pixel.png" http://localhost:8080/hub-admin/content-items```
 
 Response:
 
