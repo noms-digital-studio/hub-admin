@@ -44,15 +44,15 @@ Response:
    "contentItems:" [
       {
         "id": "588b6821aba1db4eb9d87cb3",
-        "title": "aUri1",
-        "mediaUri": "aTitle1",
+        "title": "aTitle1",
+        "mediaUri": "aUri1",
         "filename": "hub-admin-1-pixel.png",
         "category": "aCategory1"
       },
       {
         "id": "588b6821aba1db4eb9d87cb4",
-        "title": "aUri2",
-        "mediaUri": "aTitle2",
+        "title": "aTitle2",
+        "mediaUri": "aUri2",
         "filename": "hub-admin-2-pixel.png",
         "category": "aCategory2"
       }

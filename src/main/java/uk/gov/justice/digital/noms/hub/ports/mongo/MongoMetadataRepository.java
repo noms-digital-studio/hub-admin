@@ -66,11 +66,13 @@ public class MongoMetadataRepository implements MetadataRepository {
     }
 
     private ContentItem aContentItemFrom(Document document) {
-        return new ContentItem(getValueFor(document, "_id"),
-                getValueFor(document, "uri"),
-                getValueFor(document, "title"),
-                getValueFor(document, "filename"),
-                getValueFor(document, "category"));
+        return ContentItem.builder()
+                .id(getValueFor(document, "_id"))
+                .title(getValueFor(document, "title"))
+                .category(getValueFor(document, "category"))
+                .filename(getValueFor(document, "filename"))
+                .mediaUri(getValueFor(document, "uri"))
+                .build();
     }
 
     private String getValueFor(Document document, String key) {

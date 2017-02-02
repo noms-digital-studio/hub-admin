@@ -10,7 +10,7 @@ import uk.gov.justice.digital.noms.hub.domain.ContentItem
 import uk.gov.justice.digital.noms.hub.domain.MediaRepository
 import uk.gov.justice.digital.noms.hub.domain.MetadataRepository
 
-class AdminControllerGroovyTest extends Specification {
+class AdminControllerTest extends Specification {
     private static final String TITLE = "aTitle"
     private static final String FILENAME = "aFilename"
     private static final String CATEGORY = "aCategory"
@@ -48,7 +48,7 @@ class AdminControllerGroovyTest extends Specification {
         ContentItemsResponse response = adminController.findAll()
 
         then:
-        response.getContentItems() == expectedContentItems
+        response.contentItems == expectedContentItems
     }
 
     def aMediaRepositoryThatReturnsAUri() throws IOException {

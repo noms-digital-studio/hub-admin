@@ -9,6 +9,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import net.minidev.json.JSONArray;
 import org.apache.http.HttpStatus;
 import org.bson.Document;
 import org.junit.Before;
@@ -47,6 +48,24 @@ public class FindAllContentItemsTest extends BaseTest {
         // then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.SC_OK);
         assertThat(contentIdsFrom(response)).containsAll(expectedIds);
+
+        String id1 = expectedIds.get(0);
+        assertThat(aValueFrom(response, "title", id1)).isEqualTo("aTitle1");
+        assertThat(aValueFrom(response, "mediaUri", id1)).isEqualTo("aUri1");
+        assertThat(aValueFrom(response, "category", id1)).isEqualTo("aCategory1");
+        assertThat(aValueFrom(response, "filename", id1)).isEqualTo("hub-admin-1-pixel.png");
+
+        String id2 = expectedIds.get(1);
+        assertThat(aValueFrom(response, "title", id2)).isEqualTo("aTitle2");
+        assertThat(aValueFrom(response, "mediaUri", id2)).isEqualTo("aUri2");
+        assertThat(aValueFrom(response, "category", id2)).isEqualTo("aCategory2");
+        assertThat(aValueFrom(response, "filename", id2)).isEqualTo("hub-admin-2-pixel.png");
+    }
+
+    private String aValueFrom(HttpResponse<JsonNode> response, String field, String id) {
+        JSONArray titles = JsonPath.<JSONArray>read(response.getBody().toString(),
+                "$.contentItems[?(@.id == '" + id + "')]." + field);
+        return (String) titles.get(0);
     }
 
     private List<String> contentIdsFrom(HttpResponse<JsonNode> response) {
