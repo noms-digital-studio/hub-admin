@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.noms;
+package uk.gov.justice.digital.noms.hub;
 
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;

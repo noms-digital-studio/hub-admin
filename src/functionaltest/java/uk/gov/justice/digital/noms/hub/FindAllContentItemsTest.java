@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.noms;
+package uk.gov.justice.digital.noms.hub;
 
 import com.google.common.collect.ImmutableList;
 import com.jayway.jsonpath.JsonPath;

@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.noms;
+package uk.gov.justice.digital.noms.hub;
 
 import org.junit.Before;
 
