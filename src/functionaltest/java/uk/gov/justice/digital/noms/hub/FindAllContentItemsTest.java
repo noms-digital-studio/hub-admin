@@ -15,9 +15,12 @@ import org.bson.Document;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import static com.google.common.collect.Lists.reverse;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class FindAllContentItemsTest extends BaseTest {
@@ -47,7 +50,7 @@ public class FindAllContentItemsTest extends BaseTest {
 
         // then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.SC_OK);
-        assertThat(contentIdsFrom(response)).containsAll(expectedIds);
+        assertThat(contentIdsFrom(response, expectedIds)).containsExactlyElementsOf(reverse(expectedIds));
 
         String id1 = expectedIds.get(0);
         assertThat(aValueFrom(response, "title", id1)).isEqualTo("aTitle1");
@@ -63,34 +66,38 @@ public class FindAllContentItemsTest extends BaseTest {
     }
 
     private String aValueFrom(HttpResponse<JsonNode> response, String field, String id) {
-        JSONArray titles = JsonPath.<JSONArray>read(response.getBody().toString(),
+        JSONArray titles = JsonPath.read(response.getBody().toString(),
                 "$.contentItems[?(@.id == '" + id + "')]." + field);
         return (String) titles.get(0);
     }
 
-    private List<String> contentIdsFrom(HttpResponse<JsonNode> response) {
-        return JsonPath.read(response.getBody().toString(), "$.contentItems[*].id");
+    private List<String> contentIdsFrom(HttpResponse<JsonNode> response, List<String> expectedIds) {
+        List<String> allIds = JsonPath.read(response.getBody().toString(), "$.contentItems[*].id");
+        return allIds.stream()
+                     .filter(expectedIds::contains)
+                     .collect(toList());
     }
 
-    private List<String> metadataExistsInMongoDb() {
+    private List<String> metadataExistsInMongoDb() throws InterruptedException {
         MongoCollection<Document> collection = database.getCollection(MONGO_COLLECTION_NAME);
         Document contentItemDocument1 = new Document("title", "aTitle1")
                 .append("uri", "aUri1")
                 .append("category", "aCategory1")
-                .append("filename", "hub-admin-1-pixel.png");
+                .append("filename", "hub-admin-1-pixel.png")
+                .append("timestamp", new Date());
+        collection.insertOne(contentItemDocument1);
+        String key1 = contentItemDocument1.get("_id").toString();
+
+        MILLISECONDS.sleep(500);
 
         Document contentItemDocument2 = new Document("title", "aTitle2")
                 .append("uri", "aUri2")
                 .append("category", "aCategory2")
-                .append("filename", "hub-admin-2-pixel.png");
+                .append("filename", "hub-admin-2-pixel.png")
+                .append("timestamp", new Date());
+        collection.insertOne(contentItemDocument2);
+        String key2 = contentItemDocument2.get("_id").toString();
 
-        List<Document> contentItemDocuments = new ArrayList<>();
-        contentItemDocuments.add(contentItemDocument1);
-        contentItemDocuments.add(contentItemDocument2);
-
-        collection.insertMany(contentItemDocuments);
-        String key1 = contentItemDocuments.get(0).get("_id").toString();
-        String key2 = contentItemDocuments.get(1).get("_id").toString();
         return ImmutableList.of(key1, key2);
     }
 }

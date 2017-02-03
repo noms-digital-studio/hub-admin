@@ -19,6 +19,8 @@ import java.util.List;
 
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.ReturnDocument.AFTER;
+import static com.mongodb.client.model.Sorts.descending;
+import static com.mongodb.client.model.Sorts.orderBy;
 
 @Slf4j
 @Repository
@@ -58,7 +60,7 @@ public class MongoMetadataRepository implements MetadataRepository {
     public List<ContentItem> findAll() {
         List<ContentItem> result = new ArrayList<>();
         MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
-        FindIterable<Document> documents = collection.find();
+        FindIterable<Document> documents = collection.find().sort(orderBy(descending ("timestamp")));
         for (Document document : documents) {
             result.add(aContentItemFrom(document));
         }
