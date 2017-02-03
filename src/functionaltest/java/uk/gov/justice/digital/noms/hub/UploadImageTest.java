@@ -112,6 +112,7 @@ public class UploadImageTest extends BaseTest {
         assertThat(document).contains(entry("filename", IMAGE_FILE_NAME));
         assertThat(document).contains(entry("category", IMAGE_CATEGORY));
         assertThat(document).contains(entry("uri", format("%s/%s/%s", azurePublicUrlBase, AZURE_CONTAINER_NAME, IMAGE_FILE_NAME)));
+        assertThat(document.get("timestamp")).isNotNull();
 
         HttpResponse<String> imageResponse = Unirest.get(document.getString("uri")).asString();
         assertThat(imageResponse.getStatus()).isEqualTo(HttpStatus.OK.value());

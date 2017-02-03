@@ -14,6 +14,7 @@ import uk.gov.justice.digital.noms.hub.domain.ContentItem;
 import uk.gov.justice.digital.noms.hub.domain.MetadataRepository;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static com.mongodb.client.model.Filters.eq;
@@ -89,7 +90,8 @@ public class MongoMetadataRepository implements MetadataRepository {
                 new BasicDBObject("title", contentItem.getTitle())
                         .append("uri", contentItem.getMediaUri())
                         .append("filename", contentItem.getFilename())
-                        .append("category", contentItem.getCategory());
+                        .append("category", contentItem.getCategory())
+                        .append("timestamp", new Date());
 
         return new BasicDBObject("$set", contentItemDocument);
     }
