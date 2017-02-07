@@ -59,6 +59,7 @@ test {
 }
 
 task functionaltest(type: Test) {
+    group = 'verification'
     testClassesDir = sourceSets.functionaltest.output.classesDir
     classpath = sourceSets.functionaltest.runtimeClasspath
 
