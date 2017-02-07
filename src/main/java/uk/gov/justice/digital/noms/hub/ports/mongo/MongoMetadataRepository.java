@@ -13,14 +13,15 @@ import org.springframework.stereotype.Repository;
 import uk.gov.justice.digital.noms.hub.domain.ContentItem;
 import uk.gov.justice.digital.noms.hub.domain.MetadataRepository;
 
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.ReturnDocument.AFTER;
 import static com.mongodb.client.model.Sorts.descending;
 import static com.mongodb.client.model.Sorts.orderBy;
+import static java.time.format.DateTimeFormatter.ISO_INSTANT;
 
 @Slf4j
 @Repository
@@ -93,7 +94,7 @@ public class MongoMetadataRepository implements MetadataRepository {
                         .append("uri", contentItem.getMediaUri())
                         .append("filename", contentItem.getFilename())
                         .append("category", contentItem.getCategory())
-                        .append("timestamp", new Date());
+                        .append("timestamp", ISO_INSTANT.format(Instant.now()));
 
         return new BasicDBObject("$set", contentItemDocument);
     }

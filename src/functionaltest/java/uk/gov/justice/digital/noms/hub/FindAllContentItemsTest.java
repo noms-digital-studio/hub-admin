@@ -38,7 +38,7 @@ public class FindAllContentItemsTest extends BaseTest {
     }
 
     @Test
-    public void findsAllContentItemsInMetadataStore() throws Exception {
+    public void findAllReturnsDataInCorrectOrder() throws Exception {
         // given
         List<String> expectedIds = multipleItemsExistInTheMetadataStore();
 
@@ -49,28 +49,30 @@ public class FindAllContentItemsTest extends BaseTest {
 
         // then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.SC_OK);
-        assertThat(contentIdsFrom(response, expectedIds)).containsExactlyElementsOf(reverse(expectedIds));
+
+        List<String> actualIds = contentIdsFrom(response, expectedIds);
+        assertThat(actualIds).containsExactlyElementsOf(reverse(expectedIds));
 
         verifyMetadata(expectedIds, response);
     }
 
     private void verifyMetadata(List<String> expectedIds, HttpResponse<JsonNode> response) {
+        String jsonObject = response.getBody().toString();
         String id1 = expectedIds.get(0);
-        assertThat(aValueFrom(response, "title", id1)).isEqualTo("aTitle1");
-        assertThat(aValueFrom(response, "mediaUri", id1)).isEqualTo("aUri1");
-        assertThat(aValueFrom(response, "category", id1)).isEqualTo("aCategory1");
-        assertThat(aValueFrom(response, "filename", id1)).isEqualTo("hub-admin-1-pixel.png");
+        assertThat(aValueFrom(jsonObject, "title", id1)).isEqualTo("aTitle1");
+        assertThat(aValueFrom(jsonObject, "mediaUri", id1)).isEqualTo("aUri1");
+        assertThat(aValueFrom(jsonObject, "category", id1)).isEqualTo("aCategory1");
+        assertThat(aValueFrom(jsonObject, "filename", id1)).isEqualTo("hub-admin-1-pixel.png");
 
         String id2 = expectedIds.get(1);
-        assertThat(aValueFrom(response, "title", id2)).isEqualTo("aTitle2");
-        assertThat(aValueFrom(response, "mediaUri", id2)).isEqualTo("aUri2");
-        assertThat(aValueFrom(response, "category", id2)).isEqualTo("aCategory2");
-        assertThat(aValueFrom(response, "filename", id2)).isEqualTo("hub-admin-2-pixel.png");
+        assertThat(aValueFrom(jsonObject, "title", id2)).isEqualTo("aTitle2");
+        assertThat(aValueFrom(jsonObject, "mediaUri", id2)).isEqualTo("aUri2");
+        assertThat(aValueFrom(jsonObject, "category", id2)).isEqualTo("aCategory2");
+        assertThat(aValueFrom(jsonObject, "filename", id2)).isEqualTo("hub-admin-2-pixel.png");
     }
 
-    private String aValueFrom(HttpResponse<JsonNode> response, String field, String id) {
-        JSONArray titles = JsonPath.read(response.getBody().toString(),
-                "$.contentItems[?(@.id == '" + id + "')]." + field);
+    private String aValueFrom(String jsonObject, String field, String id) {
+        JSONArray titles = JsonPath.read(jsonObject, "$.contentItems[?(@.id == '" + id + "')]." + field);
         return (String) titles.get(0);
     }
 
