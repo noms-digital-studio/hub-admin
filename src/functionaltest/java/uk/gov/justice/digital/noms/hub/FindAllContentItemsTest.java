@@ -19,7 +19,6 @@ import java.util.Date;
 import java.util.List;
 
 import static com.google.common.collect.Lists.reverse;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -41,7 +40,7 @@ public class FindAllContentItemsTest extends BaseTest {
     @Test
     public void findsAllContentItemsInMetadataStore() throws Exception {
         // given
-        List<String> expectedIds = metadataExistsInMongoDb();
+        List<String> expectedIds = multipleItemsExistInTheMetadataStore();
 
         // when
         HttpResponse<JsonNode> response = Unirest.get(applicationUrl + "/content-items")
@@ -52,6 +51,10 @@ public class FindAllContentItemsTest extends BaseTest {
         assertThat(response.getStatus()).isEqualTo(HttpStatus.SC_OK);
         assertThat(contentIdsFrom(response, expectedIds)).containsExactlyElementsOf(reverse(expectedIds));
 
+        verifyMetadata(expectedIds, response);
+    }
+
+    private void verifyMetadata(List<String> expectedIds, HttpResponse<JsonNode> response) {
         String id1 = expectedIds.get(0);
         assertThat(aValueFrom(response, "title", id1)).isEqualTo("aTitle1");
         assertThat(aValueFrom(response, "mediaUri", id1)).isEqualTo("aUri1");
@@ -78,7 +81,7 @@ public class FindAllContentItemsTest extends BaseTest {
                      .collect(toList());
     }
 
-    private List<String> metadataExistsInMongoDb() throws InterruptedException {
+    private List<String> multipleItemsExistInTheMetadataStore() throws InterruptedException {
         MongoCollection<Document> collection = database.getCollection(MONGO_COLLECTION_NAME);
         Document contentItemDocument1 = new Document("title", "aTitle1")
                 .append("uri", "aUri1")
@@ -87,8 +90,6 @@ public class FindAllContentItemsTest extends BaseTest {
                 .append("timestamp", new Date());
         collection.insertOne(contentItemDocument1);
         String key1 = contentItemDocument1.get("_id").toString();
-
-        MILLISECONDS.sleep(500);
 
         Document contentItemDocument2 = new Document("title", "aTitle2")
                 .append("uri", "aUri2")
