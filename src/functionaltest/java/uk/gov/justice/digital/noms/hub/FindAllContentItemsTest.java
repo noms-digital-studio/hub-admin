@@ -46,6 +46,7 @@ public class FindAllContentItemsTest extends BaseTest {
         // when
         HttpResponse<JsonNode> response = Unirest.get(applicationUrl + "/content-items")
                 .header("accept", "application/json")
+                .basicAuth(userName, password)
                 .asJson();
 
         // then

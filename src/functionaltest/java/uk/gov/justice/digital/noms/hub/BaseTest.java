@@ -4,6 +4,8 @@ import org.junit.Before;
 
 public class BaseTest {
     protected String applicationUrl;
+    protected String userName;
+    protected String password;
 
     @Before
     public void readHostnameAndPort() {
@@ -11,6 +13,17 @@ public class BaseTest {
         if (applicationUrl == null || applicationUrl.isEmpty()) {
             applicationUrl = "http://localhost:8080/hub-admin";
         }
+    }
+
+    @Before
+    public void setupBasicAuth() {
+        String basicAuth = System.getenv("basicAuth");
+        if(basicAuth == null || basicAuth.isEmpty()) {
+            basicAuth = "user:password";
+        }
+        String[] stringArr =  basicAuth.split(":");
+        userName = stringArr[0];
+        password = stringArr[1];
     }
 
 }

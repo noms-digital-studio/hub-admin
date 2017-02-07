@@ -16,6 +16,8 @@ import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 
 import java.io.*;
@@ -24,6 +26,7 @@ import java.security.DigestInputStream;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 
 import static com.mongodb.client.model.Filters.eq;
 import static java.lang.String.format;
@@ -99,6 +102,7 @@ public class UploadImageTest extends BaseTest {
                         .field("title", IMAGE_TITLE)
                         .field("category", IMAGE_CATEGORY)
                         .field("file", getOriginalFile(IMAGE_FILE_NAME))
+                        .basicAuth(userName, password)
                         .asString();
 
         // then
@@ -171,5 +175,6 @@ public class UploadImageTest extends BaseTest {
     private String idFrom(String location) {
         return location.substring(location.lastIndexOf("/") + 1, location.length());
     }
+
 
 }
