@@ -15,10 +15,11 @@ import org.bson.Document;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 import static com.google.common.collect.Lists.reverse;
+import static java.time.format.DateTimeFormatter.ISO_INSTANT;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -89,7 +90,7 @@ public class FindAllContentItemsTest extends BaseTest {
                 .append("uri", "aUri1")
                 .append("category", "aCategory1")
                 .append("filename", "hub-admin-1-pixel.png")
-                .append("timestamp", new Date());
+                .append("timestamp", ISO_INSTANT.format(Instant.now()));
         collection.insertOne(contentItemDocument1);
         String key1 = contentItemDocument1.get("_id").toString();
 
@@ -97,7 +98,7 @@ public class FindAllContentItemsTest extends BaseTest {
                 .append("uri", "aUri2")
                 .append("category", "aCategory2")
                 .append("filename", "hub-admin-2-pixel.png")
-                .append("timestamp", new Date());
+                .append("timestamp", ISO_INSTANT.format(Instant.now()));
         collection.insertOne(contentItemDocument2);
         String key2 = contentItemDocument2.get("_id").toString();
 
