@@ -17,7 +17,7 @@ public class BaseTest {
 
     @Before
     public void setupBasicAuth() {
-        String basicAuth = System.getenv("basicAuth");
+        String basicAuth = System.getenv("BASIC_AUTH");
         if(basicAuth == null || basicAuth.isEmpty()) {
             basicAuth = "user:password";
         }
