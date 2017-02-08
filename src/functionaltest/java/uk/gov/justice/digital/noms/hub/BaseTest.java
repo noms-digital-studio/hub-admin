@@ -21,9 +21,9 @@ public class BaseTest {
         if(basicAuth == null || basicAuth.isEmpty()) {
             basicAuth = "user:password";
         }
-        String[] stringArr =  basicAuth.split(":");
-        userName = stringArr[0];
-        password = stringArr[1];
+        String[] credentials =  basicAuth.split(":");
+        userName = credentials[0];
+        password = credentials[1];
     }
 
 }
