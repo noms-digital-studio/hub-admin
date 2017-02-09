@@ -10,6 +10,18 @@ This service is responsible for content metadata and media persistence.
 Ministry of Justice.
 National Offender Management Service.
 
+Build
+----
+```
+./gradlew clean build
+```
+
+Run
+----
+```
+./gradlew bootRun
+```
+
 Content upload endpoint
 ----
 POST /hub-admin/content-items 
