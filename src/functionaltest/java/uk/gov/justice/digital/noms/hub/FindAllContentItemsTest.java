@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.noms.hub;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.jayway.jsonpath.JsonPath;
 import com.mashape.unirest.http.HttpResponse;
@@ -17,11 +18,13 @@ import org.junit.Test;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 import static com.google.common.collect.Lists.reverse;
 import static java.time.format.DateTimeFormatter.ISO_INSTANT;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.justice.digital.noms.hub.Metadata.someMetadata;
 
 public class FindAllContentItemsTest extends BaseTest {
     private static final String MONGO_COLLECTION_NAME = "contentItem";
@@ -61,44 +64,51 @@ public class FindAllContentItemsTest extends BaseTest {
     private void verifyMetadata(List<String> expectedIds, HttpResponse<JsonNode> response) {
         String jsonObject = response.getBody().toString();
         String id1 = expectedIds.get(0);
-        assertThat(aValueFrom(jsonObject, "title", id1)).isEqualTo("aTitle1");
-        assertThat(aValueFrom(jsonObject, "mediaUri", id1)).isEqualTo("aUri1");
-        assertThat(aValueFrom(jsonObject, "category", id1)).isEqualTo("aCategory1");
         assertThat(aValueFrom(jsonObject, "filename", id1)).isEqualTo("hub-admin-1-pixel.png");
+        assertThat(aValueFrom(jsonObject, "mediaUri", id1)).isEqualTo("aUri1");
+        assertThat(aMapFrom(jsonObject, "metadata", id1)).containsAllEntriesOf(someMetadata("1"));
 
         String id2 = expectedIds.get(1);
-        assertThat(aValueFrom(jsonObject, "title", id2)).isEqualTo("aTitle2");
-        assertThat(aValueFrom(jsonObject, "mediaUri", id2)).isEqualTo("aUri2");
-        assertThat(aValueFrom(jsonObject, "category", id2)).isEqualTo("aCategory2");
         assertThat(aValueFrom(jsonObject, "filename", id2)).isEqualTo("hub-admin-2-pixel.png");
+        assertThat(aValueFrom(jsonObject, "mediaUri", id2)).isEqualTo("aUri2");
+        assertThat(aMapFrom(jsonObject, "metadata", id2)).containsAllEntriesOf(someMetadata("2"));
     }
 
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> aMapFrom(String jsonObject, String field, String id) {
+        JSONArray items = JsonPath.read(jsonObject, "$.contentItems[?(@.id == '" + id + "')]." + field);
+        return (Map<String, Object>) items.get(0);
+    }
+
+
     private String aValueFrom(String jsonObject, String field, String id) {
-        JSONArray titles = JsonPath.read(jsonObject, "$.contentItems[?(@.id == '" + id + "')]." + field);
-        return (String) titles.get(0);
+
+        JSONArray items = JsonPath.read(jsonObject, "$.contentItems[?(@.id == '" + id + "')]." + field);
+        Object value = items.get(0);
+        return (String) value;
     }
 
     private List<String> contentIdsFrom(HttpResponse<JsonNode> response, List<String> expectedIds) {
         List<String> allIds = JsonPath.read(response.getBody().toString(), "$.contentItems[*].id");
         return allIds.stream()
-                     .filter(expectedIds::contains)
-                     .collect(toList());
+                .filter(expectedIds::contains)
+                .collect(toList());
     }
 
-    private List<String> multipleItemsExistInTheMetadataStore() throws InterruptedException {
+    private List<String> multipleItemsExistInTheMetadataStore() throws InterruptedException, JsonProcessingException {
         MongoCollection<Document> collection = database.getCollection(MONGO_COLLECTION_NAME);
-        Document contentItemDocument1 = new Document("title", "aTitle1")
+        Document contentItemDocument1 = new Document()
                 .append("uri", "aUri1")
-                .append("category", "aCategory1")
                 .append("filename", "hub-admin-1-pixel.png")
+                .append("metadata", someMetadata("1"))
                 .append("timestamp", ISO_INSTANT.format(Instant.now()));
         collection.insertOne(contentItemDocument1);
         String key1 = contentItemDocument1.get("_id").toString();
 
-        Document contentItemDocument2 = new Document("title", "aTitle2")
+        Document contentItemDocument2 = new Document()
                 .append("uri", "aUri2")
-                .append("category", "aCategory2")
                 .append("filename", "hub-admin-2-pixel.png")
+                .append("metadata", someMetadata("2"))
                 .append("timestamp", ISO_INSTANT.format(Instant.now()));
         collection.insertOne(contentItemDocument2);
         String key2 = contentItemDocument2.get("_id").toString();

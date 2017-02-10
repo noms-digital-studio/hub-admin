@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.noms.hub;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -16,8 +17,6 @@ import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 
 import java.io.*;
@@ -26,19 +25,17 @@ import java.security.DigestInputStream;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 
 import static com.mongodb.client.model.Filters.eq;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
+import static uk.gov.justice.digital.noms.hub.Metadata.*;
 
-public class UploadImageTest extends BaseTest {
-    private static final String IMAGE_FILE_NAME = "hub-admin-1-pixel.png";
-    private static final String IMAGE_TITLE = "A one pixel image";
+public class UploadFileTest extends BaseTest {
+    private static final String FILE_NAME = "hub-admin-1-pixel.png";
     private static final String AZURE_CONTAINER_NAME = "content-items";
     private static final String MONGO_COLLECTION_NAME = "contentItem";
-    private static final String IMAGE_CATEGORY = "A category";
 
     private MongoDatabase database;
     private CloudBlobContainer container;
@@ -99,10 +96,9 @@ public class UploadImageTest extends BaseTest {
         // when
         HttpResponse<String> response =
                 Unirest.post(applicationUrl + "/content-items")
-                        .field("title", IMAGE_TITLE)
-                        .field("category", IMAGE_CATEGORY)
-                        .field("file", getOriginalFile(IMAGE_FILE_NAME))
                         .basicAuth(userName, password)
+                        .field("file", getOriginalFile(FILE_NAME))
+                        .field("metadata", someJsonMetadata("1"))
                         .asString();
 
         // then
@@ -112,11 +108,10 @@ public class UploadImageTest extends BaseTest {
         assertThat(theContentItemResource).contains("/content-items/");
 
         Document document = theDocumentInTheMongoDbFor(theContentItemResource);
-        assertThat(document).contains(entry("title", IMAGE_TITLE));
-        assertThat(document).contains(entry("filename", IMAGE_FILE_NAME));
-        assertThat(document).contains(entry("category", IMAGE_CATEGORY));
-        assertThat(document).contains(entry("uri", format("%s/%s/%s", azurePublicUrlBase, AZURE_CONTAINER_NAME, IMAGE_FILE_NAME)));
+        assertThat(document).contains(entry("filename", FILE_NAME));
+        assertThat(document).contains(entry("uri", format("%s/%s/%s", azurePublicUrlBase, AZURE_CONTAINER_NAME, FILE_NAME)));
         assertThat(document.get("timestamp")).isNotNull();
+        assertThat(convertToMap(document.get("metadata"))).containsAllEntriesOf(someMetadata("1"));
 
         HttpResponse<String> imageResponse = Unirest.get(document.getString("uri")).asString();
         assertThat(imageResponse.getStatus()).isEqualTo(HttpStatus.OK.value());
@@ -124,7 +119,7 @@ public class UploadImageTest extends BaseTest {
     }
 
     private FileInputStream originalFileInputStream() throws FileNotFoundException, URISyntaxException {
-        return new FileInputStream(getOriginalFile(IMAGE_FILE_NAME));
+        return new FileInputStream(getOriginalFile(FILE_NAME));
     }
 
     private File getOriginalFile(String filename) throws URISyntaxException {
@@ -141,27 +136,27 @@ public class UploadImageTest extends BaseTest {
     }
 
     private void theImageDoesExistInAzure() throws URISyntaxException, StorageException, IOException {
-        CloudBlockBlob blob = container.getBlockBlobReference(IMAGE_FILE_NAME);
-        blob.upload(originalFileInputStream(), getOriginalFile(IMAGE_FILE_NAME).length());
+        CloudBlockBlob blob = container.getBlockBlobReference(FILE_NAME);
+        blob.upload(originalFileInputStream(), getOriginalFile(FILE_NAME).length());
     }
 
     private void theImageDoesNotExistInAzure() throws URISyntaxException, StorageException {
-        CloudBlockBlob blob = container.getBlockBlobReference(IMAGE_FILE_NAME);
+        CloudBlockBlob blob = container.getBlockBlobReference(FILE_NAME);
         blob.deleteIfExists();
     }
 
     private void theImageMetadataDoesNotExistInMongoDb() {
         MongoCollection<Document> collection = database.getCollection(MONGO_COLLECTION_NAME);
-        DeleteResult result = collection.deleteOne(eq("filename", IMAGE_FILE_NAME));
+        DeleteResult result = collection.deleteOne(eq("filename", FILE_NAME));
         assertThat(result.wasAcknowledged()).isTrue();
     }
 
-    private void theImageMetadataDoesExistInMongoDb() {
+    private void theImageMetadataDoesExistInMongoDb() throws JsonProcessingException {
         MongoCollection<Document> collection = database.getCollection(MONGO_COLLECTION_NAME);
-        Document contentItemDocument = new Document("title", "aTitle")
+        Document contentItemDocument = new Document()
                 .append("uri", "aUri")
-                .append("category", "aCategory")
-                .append("filename", IMAGE_FILE_NAME);
+                .append("metadata", someMetadata("1"))
+                .append("filename", FILE_NAME);
 
         collection.insertOne(contentItemDocument);
         assertThat(contentItemDocument.get("_id")).isNotNull();

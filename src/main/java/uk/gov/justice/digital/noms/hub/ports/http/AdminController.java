@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.noms.hub.ports.http;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -13,6 +15,7 @@ import uk.gov.justice.digital.noms.hub.domain.MediaRepository;
 import uk.gov.justice.digital.noms.hub.domain.MetadataRepository;
 
 import java.io.IOException;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -28,14 +31,14 @@ public class AdminController {
 
     @PostMapping("/content-items")
     public ResponseEntity saveFileAndMetadata(@RequestParam("file") MultipartFile file,
-                                              @RequestParam("title") String title,
-                                              @RequestParam("category") String category,
+                                              @RequestParam("metadata") String metadata,
                                               UriComponentsBuilder uriComponentsBuilder) throws IOException {
 
-        logParameters(file, title, category);
+        logParameters(file, metadata);
+        Map<String, Object> verifiedMetadata = validateMetadataIsWellFormedJson(metadata);
 
         String mediaUri = mediaRepository.save(file.getInputStream(), file.getOriginalFilename(), file.getSize());
-        String id = metadataRepository.save(new ContentItem(title, mediaUri, file.getOriginalFilename(), category));
+        String id = metadataRepository.save(new ContentItem(mediaUri, file.getOriginalFilename(), verifiedMetadata));
 
         return new ResponseEntity<Void>(createLocationHeader(uriComponentsBuilder, id), HttpStatus.CREATED);
     }
@@ -45,11 +48,10 @@ public class AdminController {
         return new ContentItemsResponse(metadataRepository.findAll());
     }
 
-    private void logParameters(@RequestParam("file") MultipartFile file, @RequestParam("title") String title, @RequestParam("category") String category) {
-        log.info("title: " + title);
-        log.info("category: " + category);
+    private void logParameters(MultipartFile file, String metadata) {
         log.info("filename: " + file.getOriginalFilename());
         log.info("file size: " + file.getSize());
+        log.info("metadata: " + metadata);
     }
 
     private HttpHeaders createLocationHeader(UriComponentsBuilder uriComponentsBuilder, String id) {
@@ -58,4 +60,14 @@ public class AdminController {
         headers.setLocation(uriComponents.toUri());
         return headers;
     }
+
+    private Map<String, Object> validateMetadataIsWellFormedJson(String metadata) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            return objectMapper.readValue(metadata, new TypeReference<Map<String, Object>>() { });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

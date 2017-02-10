@@ -3,9 +3,9 @@ package uk.gov.justice.digital.noms.hub;
 import org.junit.Before;
 
 public class BaseTest {
-    protected String applicationUrl;
-    protected String userName;
-    protected String password;
+    String applicationUrl;
+    String userName;
+    String password;
 
     @Before
     public void readHostnameAndPort() {

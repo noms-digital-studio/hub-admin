@@ -16,12 +16,14 @@ import uk.gov.justice.digital.noms.hub.domain.MetadataRepository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.ReturnDocument.AFTER;
 import static com.mongodb.client.model.Sorts.descending;
 import static com.mongodb.client.model.Sorts.orderBy;
 import static java.time.format.DateTimeFormatter.ISO_INSTANT;
+import static java.util.Collections.EMPTY_MAP;
 
 @Slf4j
 @Repository
@@ -61,7 +63,7 @@ public class MongoMetadataRepository implements MetadataRepository {
     public List<ContentItem> findAll() {
         List<ContentItem> result = new ArrayList<>();
         MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
-        FindIterable<Document> documents = collection.find().sort(orderBy(descending ("timestamp")));
+        FindIterable<Document> documents = collection.find().sort(orderBy(descending("timestamp")));
         for (Document document : documents) {
             result.add(aContentItemFrom(document));
         }
@@ -71,29 +73,37 @@ public class MongoMetadataRepository implements MetadataRepository {
 
     private ContentItem aContentItemFrom(Document document) {
         return ContentItem.builder()
-                .id(getValueFor(document, "_id"))
-                .title(getValueFor(document, "title"))
-                .category(getValueFor(document, "category"))
-                .filename(getValueFor(document, "filename"))
-                .mediaUri(getValueFor(document, "uri"))
+                .id(getValueFrom(document, "_id"))
+                .filename(getValueFrom(document, "filename"))
+                .mediaUri(getValueFrom(document, "uri"))
+                .metadata(getMetadataMapFrom(document))
                 .build();
     }
 
-    private String getValueFor(Document document, String key) {
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> getMetadataMapFrom(Document document) {
+        Object o = document.get("metadata");
+        if (o != null && o instanceof Map) {
+            return (Map<String, Object>) o;
+        }
+
+        return EMPTY_MAP;
+    }
+
+    private String getValueFrom(Document document, String key) {
         Object o = document.get(key);
         if (o != null) {
             return o.toString();
-        } else {
-            return "";
         }
+
+        return "";
     }
 
     private BasicDBObject anUpdateFor(ContentItem contentItem) {
         BasicDBObject contentItemDocument =
-                new BasicDBObject("title", contentItem.getTitle())
+                new BasicDBObject("filename", contentItem.getFilename())
                         .append("uri", contentItem.getMediaUri())
-                        .append("filename", contentItem.getFilename())
-                        .append("category", contentItem.getCategory())
+                        .append("metadata", contentItem.getMetadata())
                         .append("timestamp", ISO_INSTANT.format(Instant.now()));
 
         return new BasicDBObject("$set", contentItemDocument);

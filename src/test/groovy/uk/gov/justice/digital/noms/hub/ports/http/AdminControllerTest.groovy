@@ -14,6 +14,7 @@ class AdminControllerTest extends Specification {
     private static final String TITLE = "aTitle"
     private static final String FILENAME = "aFilename"
     private static final String CATEGORY = "aCategory"
+    private static final String MEDIA_TYPE = "aMediaType"
 
     private AdminController adminController
 
@@ -25,21 +26,29 @@ class AdminControllerTest extends Specification {
         adminController = new AdminController(metadataRepository, mediaRepository)
     }
 
-    def 'content item is saved with its metadata and a location header is returned'() {
+    def 'saveFileAndMetadata saves the file and its data then returns a location header'() {
         given:
         def uri = aMediaRepositoryThatReturnsAUri()
         def id = aMetadataRepositoryThatReturnsAnId(uri)
 
         when:
         ResponseEntity responseEntity =
-                adminController.saveFileAndMetadata(file, TITLE, CATEGORY, UriComponentsBuilder.newInstance())
+                adminController.saveFileAndMetadata(file, someJsonMetadata(), UriComponentsBuilder.newInstance())
 
         then:
         responseEntity.getStatusCodeValue() == HttpStatus.SC_CREATED
         responseEntity.getHeaders().Location.first() == "/content-items/" + id
     }
 
-    def 'all content item metadata is returned'() {
+    def 'saveFileAndMetadata throws RuntimeException when the JSON metadata is malformed'() {
+        when:
+        adminController.saveFileAndMetadata(file, 'not a json string', UriComponentsBuilder.newInstance())
+
+        then:
+        thrown(RuntimeException)
+    }
+
+    def 'all content items are returned by findAll'() {
         given:
         def expectedContentItems = someContentItems()
         metadataRepository.findAll() >> expectedContentItems
@@ -63,7 +72,7 @@ class AdminControllerTest extends Specification {
     def aMetadataRepositoryThatReturnsAnId(String uri) {
         file.getOriginalFilename() >> FILENAME
         String id = UUID.randomUUID().toString()
-        metadataRepository.save(new ContentItem(TITLE, uri, FILENAME, CATEGORY)) >> id
+        metadataRepository.save(new ContentItem(uri, FILENAME, someMetadata())) >> id
         id
     }
 
@@ -72,7 +81,21 @@ class AdminControllerTest extends Specification {
     }
 
     def aContentItem() {
-        new ContentItem(UUID.randomUUID().toString(), "aTitle", "aUri", "aFilename", "aCategory")
+        new ContentItem(UUID.randomUUID().toString(), "aUri", someMetadata())
+    }
+
+    def someJsonMetadata() {
+        """
+        { 
+            "title": "${TITLE}", 
+            "category": "${CATEGORY}", 
+            "mediaType": "${MEDIA_TYPE}" 
+        }
+        """
+    }
+
+    def someMetadata() {
+        [title: TITLE, category: CATEGORY, mediaType: MEDIA_TYPE]
     }
 
 }

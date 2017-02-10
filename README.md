@@ -25,13 +25,13 @@ Run
 Content upload endpoint
 ----
 POST /hub-admin/content-items 
-Multipart form endpoint that takes a 'file' and a 'title'
+Multipart form endpoint that takes a 'file' and some metadata.
 
 Examples
 ----
 Request:
 
-```curl -v -F title=foo -F -Fcategory=cat1 "file=@1-pixel.png" http://localhost:8080/hub-admin/content-items```
+```curl -u user:password -F metadata={"title": "some title"} "file=@1-pixel.png" http://localhost:8080/hub-admin/content-items```
 
 Response:
 
@@ -48,25 +48,32 @@ Examples
 ----
 Request:
 
-```curl http://localhost:8080/hub-admin/content-items```
+```curl -u user:password http://localhost:8080/hub-admin/content-items```
 
 Response:
+
+Note: The metadata contents are arbitrary.
+
 ```
 {
    "contentItems:" [
       {
         "id": "588b6821aba1db4eb9d87cb3",
-        "title": "aTitle1",
         "mediaUri": "aUri1",
         "filename": "hub-admin-1-pixel.png",
-        "category": "aCategory1"
+        "metadata": {
+            "title": "aTitle1",
+            "category": "aCategory1"
+        }
       },
       {
         "id": "588b6821aba1db4eb9d87cb4",
-        "title": "aTitle2",
         "mediaUri": "aUri2",
         "filename": "hub-admin-2-pixel.png",
-        "category": "aCategory2"
+        "metadata": {
+            "title": "aTitle2",
+            "category": "aCategory2"
+        }
       }
     ]
 }
