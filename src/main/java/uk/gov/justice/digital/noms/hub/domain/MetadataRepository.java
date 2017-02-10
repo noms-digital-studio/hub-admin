@@ -4,5 +4,5 @@ import java.util.List;
 
 public interface MetadataRepository {
     String save(ContentItem contentItem);
-    List<ContentItem> findAll();
+    List<ContentItem> findAll(String filter);
 }

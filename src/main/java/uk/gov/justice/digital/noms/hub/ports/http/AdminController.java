@@ -44,8 +44,12 @@ public class AdminController {
     }
 
     @GetMapping("/content-items")
-    public @ResponseBody ContentItemsResponse findAll() {
-        return new ContentItemsResponse(metadataRepository.findAll());
+    public @ResponseBody ContentItemsResponse findAll(@RequestParam(value = "filter", required = false) String filter) {
+        if (filter == null || filter.isEmpty()) {
+            filter = "{ 'metadata.mediaType': 'application/pdf'}";
+        }
+
+        return new ContentItemsResponse(metadataRepository.findAll(filter));
     }
 
     private void logParameters(MultipartFile file, String metadata) {

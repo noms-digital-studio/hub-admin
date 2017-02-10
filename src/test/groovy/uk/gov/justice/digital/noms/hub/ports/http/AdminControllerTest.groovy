@@ -51,10 +51,10 @@ class AdminControllerTest extends Specification {
     def 'all content items are returned by findAll'() {
         given:
         def expectedContentItems = someContentItems()
-        metadataRepository.findAll() >> expectedContentItems
+        metadataRepository.findAll("{ 'metadata.mediaType': 'application/pdf'}") >> expectedContentItems
 
         when:
-        ContentItemsResponse response = adminController.findAll()
+        ContentItemsResponse response = adminController.findAll(null)
 
         then:
         response.contentItems == expectedContentItems

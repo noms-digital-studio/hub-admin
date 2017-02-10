@@ -60,10 +60,12 @@ public class MongoMetadataRepository implements MetadataRepository {
     }
 
     @Override
-    public List<ContentItem> findAll() {
+    public List<ContentItem> findAll(String filter) {
         List<ContentItem> result = new ArrayList<>();
         MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
-        FindIterable<Document> documents = collection.find().sort(orderBy(descending("timestamp")));
+        FindIterable<Document> documents =
+                collection.find(BasicDBObject.parse(filter))
+                          .sort(orderBy(descending("timestamp")));
         for (Document document : documents) {
             result.add(aContentItemFrom(document));
         }

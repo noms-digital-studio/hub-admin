@@ -111,7 +111,7 @@ public class UploadFileTest extends BaseTest {
         assertThat(document).contains(entry("filename", FILE_NAME));
         assertThat(document).contains(entry("uri", format("%s/%s/%s", azurePublicUrlBase, AZURE_CONTAINER_NAME, FILE_NAME)));
         assertThat(document.get("timestamp")).isNotNull();
-        assertThat(convertToMap(document.get("metadata"))).containsAllEntriesOf(someMetadata("1"));
+        assertThat(convertToMap(document.get("metadata"))).containsAllEntriesOf(someMetadata("1", MEDIA_TYPE));
 
         HttpResponse<String> imageResponse = Unirest.get(document.getString("uri")).asString();
         assertThat(imageResponse.getStatus()).isEqualTo(HttpStatus.OK.value());
@@ -155,7 +155,7 @@ public class UploadFileTest extends BaseTest {
         MongoCollection<Document> collection = database.getCollection(MONGO_COLLECTION_NAME);
         Document contentItemDocument = new Document()
                 .append("uri", "aUri")
-                .append("metadata", someMetadata("1"))
+                .append("metadata", someMetadata("1", MEDIA_TYPE))
                 .append("filename", FILE_NAME);
 
         collection.insertOne(contentItemDocument);

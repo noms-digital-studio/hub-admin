@@ -17,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +25,7 @@ import static com.google.common.collect.Lists.reverse;
 import static java.time.format.DateTimeFormatter.ISO_INSTANT;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.justice.digital.noms.hub.Metadata.MEDIA_TYPE;
 import static uk.gov.justice.digital.noms.hub.Metadata.someMetadata;
 
 public class FindAllContentItemsTest extends BaseTest {
@@ -61,17 +63,52 @@ public class FindAllContentItemsTest extends BaseTest {
         verifyMetadata(expectedIds, response);
     }
 
+    @Test
+    public void findAllWithFilterReturnsOnlySelectedData() throws Exception {
+        // given
+        List<String> ids = multipleItemsExistInTheMetadataStore();
+        List<String> originalIds = anotherItemWithDifferentMediaTypeisAdded(ids);
+
+        // when
+        HttpResponse<JsonNode> response = Unirest.get(applicationUrl + "/content-items")
+                .header("accept", "application/json")
+                .basicAuth(userName, password)
+                .queryString("filter", "{ 'metadata.mediaType': 'image/jpg'}")
+                .asJson();
+
+        // then
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.SC_OK);
+
+        List<String> actualIds = contentIdsFrom(response, originalIds);
+        List<String> expectedIds = originalIds.subList(2, 3);
+        assertThat(actualIds).containsExactlyElementsOf(reverse(expectedIds));
+    }
+
+    private List<String> anotherItemWithDifferentMediaTypeisAdded(List<String> ids) {
+        MongoCollection<Document> collection = database.getCollection(MONGO_COLLECTION_NAME);
+        Document contentItemDocument3 = new Document()
+                .append("uri", "aUri3")
+                .append("filename", "hub-admin-3-pixel.png")
+                .append("metadata", someMetadata("3", "image/jpg"))
+                .append("timestamp", ISO_INSTANT.format(Instant.now()));
+        collection.insertOne(contentItemDocument3);
+        List<String> originalIds = new ArrayList<>(ids);
+        originalIds.add(contentItemDocument3.get("_id").toString());
+        return originalIds;
+    }
+
+
     private void verifyMetadata(List<String> expectedIds, HttpResponse<JsonNode> response) {
         String jsonObject = response.getBody().toString();
         String id1 = expectedIds.get(0);
         assertThat(aValueFrom(jsonObject, "filename", id1)).isEqualTo("hub-admin-1-pixel.png");
         assertThat(aValueFrom(jsonObject, "mediaUri", id1)).isEqualTo("aUri1");
-        assertThat(aMapFrom(jsonObject, "metadata", id1)).containsAllEntriesOf(someMetadata("1"));
+        assertThat(aMapFrom(jsonObject, "metadata", id1)).containsAllEntriesOf(someMetadata("1", MEDIA_TYPE));
 
         String id2 = expectedIds.get(1);
         assertThat(aValueFrom(jsonObject, "filename", id2)).isEqualTo("hub-admin-2-pixel.png");
         assertThat(aValueFrom(jsonObject, "mediaUri", id2)).isEqualTo("aUri2");
-        assertThat(aMapFrom(jsonObject, "metadata", id2)).containsAllEntriesOf(someMetadata("2"));
+        assertThat(aMapFrom(jsonObject, "metadata", id2)).containsAllEntriesOf(someMetadata("2", MEDIA_TYPE));
     }
 
     @SuppressWarnings("unchecked")
@@ -100,7 +137,7 @@ public class FindAllContentItemsTest extends BaseTest {
         Document contentItemDocument1 = new Document()
                 .append("uri", "aUri1")
                 .append("filename", "hub-admin-1-pixel.png")
-                .append("metadata", someMetadata("1"))
+                .append("metadata", someMetadata("1", MEDIA_TYPE))
                 .append("timestamp", ISO_INSTANT.format(Instant.now()));
         collection.insertOne(contentItemDocument1);
         String key1 = contentItemDocument1.get("_id").toString();
@@ -108,7 +145,7 @@ public class FindAllContentItemsTest extends BaseTest {
         Document contentItemDocument2 = new Document()
                 .append("uri", "aUri2")
                 .append("filename", "hub-admin-2-pixel.png")
-                .append("metadata", someMetadata("2"))
+                .append("metadata", someMetadata("2", MEDIA_TYPE))
                 .append("timestamp", ISO_INSTANT.format(Instant.now()));
         collection.insertOne(contentItemDocument2);
         String key2 = contentItemDocument2.get("_id").toString();

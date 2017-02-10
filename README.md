@@ -42,7 +42,14 @@ Location: http://localhost:8080/hub-admin/content-items/7a2b215c-0e2d-4631-8f02-
 
 Content Items list endpoint
 ----
-GET /hub-admin/content-items
+GET /hub-admin/content-items<?filter=[filter]>
+
+filter is an optional query parameter, it defaults to application/pdf is not sent
+
+e.g.
+```
+filter={ 'metadata.mediaType': 'image/jpg'}
+```
 
 Examples
 ----
