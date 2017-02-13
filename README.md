@@ -44,7 +44,9 @@ Content Items list endpoint
 ----
 GET /hub-admin/content-items<?filter=[filter]>
 
-filter is an optional query parameter, it defaults to application/pdf is not sent
+filter is an optional query parameter, it defaults to application/pdf if not sent.
+
+To provide a filter that returns everything use '{}' for the filter value.
 
 e.g.
 ```
