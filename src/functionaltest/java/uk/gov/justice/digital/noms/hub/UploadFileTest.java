@@ -56,12 +56,12 @@ public class UploadFileTest extends BaseTest {
     public void connectToAzureBlobStore() throws URISyntaxException, InvalidKeyException, StorageException {
         String azureConnectionUri = System.getenv("AZURE_BLOB_STORE_CONNECTION_URI");
         if (azureConnectionUri == null || azureConnectionUri.isEmpty()) {
-            throw new RuntimeException("AZURE_BLOB_STORE_CONNECTION_URI environment variable was not set");
+            azureConnectionUri = "AccountName=abc;AccountKey=YWJjCg==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;";
         }
 
         azurePublicUrlBase = System.getenv("AZURE_BLOB_STORE_PUBLIC_URL_BASE");
         if (azurePublicUrlBase == null || azurePublicUrlBase.isEmpty()) {
-            azurePublicUrlBase = "http://digitalhub2.blob.core.windows.net";
+            azurePublicUrlBase = "http://127.0.0.1:10000";
         }
 
         CloudStorageAccount storageAccount = CloudStorageAccount.parse(azureConnectionUri);
