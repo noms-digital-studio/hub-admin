@@ -10,7 +10,7 @@ import uk.gov.justice.digital.noms.hub.domain.ContentItem
 import uk.gov.justice.digital.noms.hub.domain.MediaRepository
 import uk.gov.justice.digital.noms.hub.domain.MetadataRepository
 
-class AdminControllerTest extends Specification {
+class AdminControllerSpec extends Specification {
     private static final String TITLE = "aTitle"
     private static final String FILENAME = "aFilename"
     private static final String TIMESTAMP = "2017-02-13T11:46:14.154Z"
