@@ -3,3 +3,4 @@
 build/
 out/
 .gradletasknamecache
+__azurite_db__.json

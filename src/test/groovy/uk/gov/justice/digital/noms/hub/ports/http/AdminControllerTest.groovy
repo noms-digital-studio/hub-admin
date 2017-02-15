@@ -13,6 +13,7 @@ import uk.gov.justice.digital.noms.hub.domain.MetadataRepository
 class AdminControllerTest extends Specification {
     private static final String TITLE = "aTitle"
     private static final String FILENAME = "aFilename"
+    private static final String TIMESTAMP = "2017-02-13T11:46:14.154Z"
     private static final String CATEGORY = "aCategory"
     private static final String MEDIA_TYPE = "aMediaType"
 
@@ -81,7 +82,7 @@ class AdminControllerTest extends Specification {
     }
 
     def aContentItem() {
-        new ContentItem(UUID.randomUUID().toString(), "aUri", someMetadata())
+        new ContentItem(UUID.randomUUID().toString(), "aUri", FILENAME, TIMESTAMP, someMetadata())
     }
 
     def someJsonMetadata() {

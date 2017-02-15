@@ -77,6 +77,7 @@ public class MongoMetadataRepository implements MetadataRepository {
         return ContentItem.builder()
                 .id(getValueFrom(document, "_id"))
                 .filename(getValueFrom(document, "filename"))
+                .timestamp(getValueFrom(document, "timestamp"))
                 .mediaUri(getValueFrom(document, "uri"))
                 .metadata(getMetadataMapFrom(document))
                 .build();
