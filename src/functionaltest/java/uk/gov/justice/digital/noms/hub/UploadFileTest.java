@@ -96,7 +96,7 @@ public class UploadFileTest extends BaseTest {
         // when
         HttpResponse<String> response =
                 Unirest.post(applicationUrl + "/content-items")
-                        .basicAuth(userName, password)
+                        .basicAuth(username, password)
                         .field("file", getOriginalFile(FILE_NAME))
                         .field("metadata", someJsonMetadata("1"))
                         .asString();

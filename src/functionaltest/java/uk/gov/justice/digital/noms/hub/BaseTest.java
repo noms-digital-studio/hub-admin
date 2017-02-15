@@ -4,7 +4,7 @@ import org.junit.Before;
 
 public class BaseTest {
     String applicationUrl;
-    String userName;
+    String username;
     String password;
 
     @Before
@@ -17,13 +17,15 @@ public class BaseTest {
 
     @Before
     public void setupBasicAuth() {
-        String basicAuth = System.getenv("BASIC_AUTH");
-        if(basicAuth == null || basicAuth.isEmpty()) {
-            basicAuth = "user:password";
+        username = System.getenv("BASIC_AUTH_USERNAME");
+        if (username == null || username.isEmpty()) {
+            username = "user";
         }
-        String[] credentials =  basicAuth.split(":");
-        userName = credentials[0];
-        password = credentials[1];
+
+        password = System.getenv("BASIC_AUTH_PASSWORD");
+        if (password == null || password.isEmpty()) {
+            password = "password";
+        }
     }
 
 }

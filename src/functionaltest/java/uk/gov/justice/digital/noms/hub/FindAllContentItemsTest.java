@@ -51,7 +51,7 @@ public class FindAllContentItemsTest extends BaseTest {
         // when
         HttpResponse<JsonNode> response = Unirest.get(applicationUrl + "/content-items")
                 .header("accept", "application/json")
-                .basicAuth(userName, password)
+                .basicAuth(username, password)
                 .asJson();
 
         // then
@@ -72,7 +72,7 @@ public class FindAllContentItemsTest extends BaseTest {
         // when
         HttpResponse<JsonNode> response = Unirest.get(applicationUrl + "/content-items")
                 .header("accept", "application/json")
-                .basicAuth(userName, password)
+                .basicAuth(username, password)
                 .queryString("filter", "{ 'metadata.mediaType': 'image/jpg'}")
                 .asJson();
 

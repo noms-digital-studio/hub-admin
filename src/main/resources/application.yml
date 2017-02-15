@@ -16,5 +16,5 @@ spring:
 
 security:
   user:
-    name: ${hubadmin.security.username:user}
-    password: ${hubadmin.security.password:password}
+    name: ${basic.auth.username:user}
+    password: ${basic.auth.password:password}

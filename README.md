@@ -115,24 +115,22 @@ AZURE_BLOB_STORE_PUBLIC_URL_BASE - The base URL for items in the blob store.
 e.g. https://<account name>.blob.core.windows.net
 ```
 
+```
+BASIC_AUTH_USERNAME - basic auth username for the the service
+e.g. user
+```
+
+```
+BASIC_AUTH_PASSWORD - basic auth password for the the service
+e.g. password
+```
+
+
 Environment variable required by the functional tests
 ----
+All the above variable plus the following:
+
 ```
 APPLICATION_URL - The transport, host, port and context path that the application is running on. Default to http://localhost:8080/hun-admin
 e.g. https://hub-admin.herokuapp.com/hub-admin
-```
-
-```
-MONGODB_CONNECTION_URI - The MongoDb connection string. Defaults to mongodb://localhost:27017
-e.g. mongodb:<user>:<key>==@bar.documents.azure.com:10250/?ssl=true
-```
-
-```
-AZURE_BLOB_STORE_CONNECTION_URI - The Azure blob store connection string. 
-e.g. DefaultEndpointsProtocol=http;AccountName=<account name>;AccountKey=<key>
-```
-
-```
-AZURE_BLOB_STORE_PUBLIC_URL_BASE - The base URL for items in the blob store.   
-e.g. https://<account name>.blob.core.windows.net
 ```
