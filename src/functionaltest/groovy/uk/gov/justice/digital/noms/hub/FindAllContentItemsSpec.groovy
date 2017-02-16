@@ -13,7 +13,7 @@ class FindAllContentItemsSpec extends Specification {
     private Hub theHub
 
     @Shared
-    private String root
+    private String adminAppRoot
 
     @Shared
     private GMongo mongo
@@ -29,7 +29,7 @@ class FindAllContentItemsSpec extends Specification {
     def setup() {
         theHub = new Hub()
 
-        root = theHub.adminUri
+        adminAppRoot = theHub.adminUri
 
         mongo = new GMongo(mongoConnectionUri())
         db = mongo.getDB("hub_metadata")
@@ -52,7 +52,7 @@ class FindAllContentItemsSpec extends Specification {
         def itemTwoId = insertItem(2)
 
         when: 'we get the all content items JSON resource'
-        def json = (root + '/content-items').toURL().getText(basicAuth)
+        def json = (adminAppRoot + '/content-items').toURL().getText(basicAuth)
         def jsonObject = jsonSlurper.parseText(json)
         def items = jsonObject.contentItems
 
@@ -153,7 +153,7 @@ class FindAllContentItemsSpec extends Specification {
     }
 
     def getJsonForMediaType(mediaType) {
-        def json = (root + "/content-items?filter={'metadata.mediaType':'${mediaType}'}").toURL().getText(basicAuth)
+        def json = (adminAppRoot + "/content-items?filter={'metadata.mediaType':'${mediaType}'}").toURL().getText(basicAuth)
         return jsonSlurper.parseText(json).contentItems
     }
 }
