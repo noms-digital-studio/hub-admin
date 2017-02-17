@@ -21,7 +21,6 @@ class FindAllContentItemsSpec extends Specification {
     @Shared
     private DB db
 
-    private String credentials
     private Map basicAuth
     private Date aDate
     private jsonSlurper
@@ -31,10 +30,10 @@ class FindAllContentItemsSpec extends Specification {
 
         adminAppRoot = theHub.adminUri
 
-        mongo = new GMongo(mongoConnectionUri())
+        mongo = new GMongo(theHub.mongoConnectionUri)
         db = mongo.getDB("hub_metadata")
 
-        credentials = "${theHub.username}:${theHub.password}".bytes.encodeBase64()
+        String credentials = "${theHub.username}:${theHub.password}".bytes.encodeBase64()
         basicAuth = [requestProperties: [Authorization: "Basic ${credentials}"]]
 
         aDate = Date.parse("yyyy-MM-dd'T'HH:mm:ss'Z'", '2017-01-01T10:00:00Z')
@@ -121,16 +120,6 @@ class FindAllContentItemsSpec extends Specification {
         }
     }
 
-    def mongoConnectionUri() {
-        String uri = System.getenv('MONGODB_CONNECTION_URI')
-
-        if (uri) {
-            return uri
-        }
-
-        return 'localhost:27017'
-    }
-
     String insertItem(int offset, String mediaType = 'application/pdf') {
         ObjectId id = ObjectId.get();
 
@@ -152,8 +141,9 @@ class FindAllContentItemsSpec extends Specification {
         return aDate.plus(offsetDays - 1).format("yyyy-MM-dd'T'HH:mm:ss'Z'")
     }
 
-    def getJsonForMediaType(mediaType) {
+    List getJsonForMediaType(mediaType) {
         def json = (adminAppRoot + "/content-items?filter={'metadata.mediaType':'${mediaType}'}").toURL().getText(basicAuth)
+
         return jsonSlurper.parseText(json).contentItems
     }
 }
