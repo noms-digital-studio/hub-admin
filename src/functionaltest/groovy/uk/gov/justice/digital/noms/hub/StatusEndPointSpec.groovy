@@ -13,6 +13,7 @@ class StatusEndPointSpec extends Specification {
     @Shared
     private Hub theHub = new Hub()
 
+    @Ignore
     def 'health resource returns success when app is running'() {
 
         when:
