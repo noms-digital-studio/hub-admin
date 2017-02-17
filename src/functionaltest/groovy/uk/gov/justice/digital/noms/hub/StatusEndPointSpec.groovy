@@ -4,6 +4,7 @@ import com.mashape.unirest.http.HttpResponse
 import com.mashape.unirest.http.JsonNode
 import com.mashape.unirest.http.Unirest
 import org.springframework.http.HttpStatus
+import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -12,6 +13,7 @@ class StatusEndPointSpec extends Specification {
     @Shared
     private Hub theHub = new Hub()
 
+    @Ignore
     def 'health resource returns success when app is running'() {
 
         when:
