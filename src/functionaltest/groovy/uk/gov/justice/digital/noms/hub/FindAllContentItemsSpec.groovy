@@ -81,10 +81,10 @@ class FindAllContentItemsSpec extends Specification {
         matches[1].metadata.title == 'title1'
         matches[1].metadata.category == 'category1'
 
-        cleanup:
-        [itemOneId, itemTwoId].each {
-            db.contentItem.remove(_id: new ObjectId(it.toString()))
-        }
+//        cleanup:
+//        [itemOneId, itemTwoId].each {
+//            db.contentItem.remove(_id: new ObjectId(it.toString()))
+//        }
     }
 
     def 'find all with filter returns only matching items'() {
@@ -114,10 +114,10 @@ class FindAllContentItemsSpec extends Specification {
         videoItems.find { it.id == itemTwoId } == null
         videoItems.find { it.id == itemThreeId } != null
 
-        cleanup:
-        [itemOneId, itemTwoId, itemThreeId].each {
-            db.contentItem.remove(_id: new ObjectId(it.toString()))
-        }
+//        cleanup:
+//        [itemOneId, itemTwoId, itemThreeId].each {
+//            db.contentItem.remove(_id: new ObjectId(it.toString()))
+//        }
     }
 
     String insertItem(int offset, String mediaType = 'application/pdf') {
