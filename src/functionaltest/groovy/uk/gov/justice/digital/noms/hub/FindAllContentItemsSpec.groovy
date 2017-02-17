@@ -3,6 +3,7 @@ package uk.gov.justice.digital.noms.hub
 import com.gmongo.GMongo
 import com.gmongo.GMongoClient
 import com.mongodb.DB
+import com.mongodb.MongoClientURI
 import groovy.json.JsonSlurper
 import org.bson.types.ObjectId
 import spock.lang.Ignore
@@ -32,7 +33,8 @@ class FindAllContentItemsSpec extends Specification {
 
         adminAppRoot = theHub.adminUri
 
-        mongo = new GMongoClient(theHub.mongoConnectionUri)
+        MongoClientURI mongoUri = new MongoClientURI(theHub.mongoConnectionUri)
+        mongo = new GMongoClient(mongoUri)
         db = mongo.getDB("hub_metadata")
 
         String credentials = "${theHub.username}:${theHub.password}".bytes.encodeBase64()
@@ -43,7 +45,7 @@ class FindAllContentItemsSpec extends Specification {
         jsonSlurper = new JsonSlurper()
     }
 
-    @Ignore
+
     def 'findAll returns all, newest first, with the right contents'() {
 
         given: 'the number of items that already exist'
@@ -90,7 +92,6 @@ class FindAllContentItemsSpec extends Specification {
         }
     }
 
-    @Ignore
     def 'find all with filter returns only matching items'() {
 
         given: 'we create two new image items'
