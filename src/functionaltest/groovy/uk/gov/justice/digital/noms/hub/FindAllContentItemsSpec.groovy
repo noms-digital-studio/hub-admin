@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.noms.hub
 
 import com.gmongo.GMongo
+import com.gmongo.GMongoClient
 import com.mongodb.DB
 import groovy.json.JsonSlurper
 import org.bson.types.ObjectId
@@ -30,7 +31,7 @@ class FindAllContentItemsSpec extends Specification {
 
         adminAppRoot = theHub.adminUri
 
-        mongo = new GMongo(theHub.mongoConnectionUri)
+        mongo = new GMongoClient(theHub.mongoConnectionUri)
         db = mongo.getDB("hub_metadata")
 
         String credentials = "${theHub.username}:${theHub.password}".bytes.encodeBase64()
@@ -81,10 +82,10 @@ class FindAllContentItemsSpec extends Specification {
         matches[1].metadata.title == 'title1'
         matches[1].metadata.category == 'category1'
 
-//        cleanup:
-//        [itemOneId, itemTwoId].each {
-//            db.contentItem.remove(_id: new ObjectId(it.toString()))
-//        }
+        cleanup:
+        [itemOneId, itemTwoId].each {
+            db.contentItem.remove(_id: new ObjectId(it.toString()))
+        }
     }
 
     def 'find all with filter returns only matching items'() {
@@ -114,10 +115,10 @@ class FindAllContentItemsSpec extends Specification {
         videoItems.find { it.id == itemTwoId } == null
         videoItems.find { it.id == itemThreeId } != null
 
-//        cleanup:
-//        [itemOneId, itemTwoId, itemThreeId].each {
-//            db.contentItem.remove(_id: new ObjectId(it.toString()))
-//        }
+        cleanup:
+        [itemOneId, itemTwoId, itemThreeId].each {
+            db.contentItem.remove(_id: new ObjectId(it.toString()))
+        }
     }
 
     String insertItem(int offset, String mediaType = 'application/pdf') {
