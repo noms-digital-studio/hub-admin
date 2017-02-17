@@ -5,6 +5,7 @@ import com.gmongo.GMongoClient
 import com.mongodb.DB
 import groovy.json.JsonSlurper
 import org.bson.types.ObjectId
+import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -42,6 +43,7 @@ class FindAllContentItemsSpec extends Specification {
         jsonSlurper = new JsonSlurper()
     }
 
+    @Ignore
     def 'findAll returns all, newest first, with the right contents'() {
 
         given: 'the number of items that already exist'
@@ -88,6 +90,7 @@ class FindAllContentItemsSpec extends Specification {
         }
     }
 
+    @Ignore
     def 'find all with filter returns only matching items'() {
 
         given: 'we create two new image items'
