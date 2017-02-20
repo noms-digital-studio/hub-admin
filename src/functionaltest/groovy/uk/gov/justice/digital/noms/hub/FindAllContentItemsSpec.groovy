@@ -55,7 +55,7 @@ class FindAllContentItemsSpec extends Specification {
         def itemTwoId = insertItem(2)
 
         when: 'we get the all content items JSON resource'
-        def json = (adminAppRoot + '/content-items').toURL().getText(basicAuth)
+        def json = (adminAppRoot + '/content-items?filter={}').toURL().getText(basicAuth)
         def jsonObject = jsonSlurper.parseText(json)
         def items = jsonObject.contentItems
 
