@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 
+import java.util.Arrays;
 import java.util.Map;
 
 class Metadata {
@@ -24,7 +25,8 @@ class Metadata {
         return ImmutableMap.of(
                 "title", TITLE + valuePostfix,
                 "category", CATEGORY + valuePostfix,
-                "mediaType", mediaType
+                "mediaType", mediaType,
+                "fileLabels", Arrays.asList("main")
         );
     }
 

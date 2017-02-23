@@ -80,10 +80,12 @@ class FindAllContentItemsSpec extends Specification {
         matches[0].filename == 'filename2'
         matches[0].metadata.title == 'title2'
         matches[0].metadata.category == 'category2'
+        matches[0].files.main == 'filename2'
 
         matches[1].filename == 'filename1'
         matches[1].metadata.title == 'title1'
         matches[1].metadata.category == 'category1'
+        matches[1].files.main == 'filename1'
 
         cleanup:
         [itemOneId, itemTwoId].each {
@@ -132,6 +134,10 @@ class FindAllContentItemsSpec extends Specification {
                 uri: "uri${offset}",
                 filename: "filename${offset}",
                 timestamp: timestamp(offset),
+                files: [
+                        main     : "filename${offset}",
+                        thumbnail: "someUrl/thumb.jpg"
+                ],
                 metadata: [
                         title    : "title${offset}",
                         category : "category${offset}",

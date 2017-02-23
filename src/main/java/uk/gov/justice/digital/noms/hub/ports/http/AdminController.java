@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.noms.hub.ports.http;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.MapType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -11,10 +11,10 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.justice.digital.noms.hub.domain.ContentItem;
-import uk.gov.justice.digital.noms.hub.domain.MediaRepository;
 import uk.gov.justice.digital.noms.hub.domain.MetadataRepository;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -22,41 +22,42 @@ import java.util.Map;
 public class AdminController {
 
     private final MetadataRepository metadataRepository;
-    private final MediaRepository mediaRepository;
+    private final MediaStore mediaStore;
 
-    public AdminController(MetadataRepository metadataRepository, MediaRepository mediaRepository) {
+    public AdminController(MetadataRepository metadataRepository, MediaStore mediaStore) {
         this.metadataRepository = metadataRepository;
-        this.mediaRepository = mediaRepository;
+        this.mediaStore = mediaStore;
     }
 
     @PostMapping("/content-items")
-    public ResponseEntity saveFileAndMetadata(@RequestParam("file") MultipartFile file,
+    public ResponseEntity saveFileAndMetadata(@RequestParam("file") MultipartFile[] files,
                                               @RequestParam("metadata") String metadata,
                                               UriComponentsBuilder uriComponentsBuilder) throws IOException {
 
-        logParameters(file, metadata);
-        Map<String, Object> verifiedMetadata = validateMetadataIsWellFormedJson(metadata);
+        Map<String, Object> verifiedMetadata = parseMetadata(metadata);
+        Map<String, Object> fileList = mediaStore.storeFiles(files, verifiedMetadata);
 
-        String mediaUri = mediaRepository.save(file.getInputStream(), file.getOriginalFilename(), file.getSize());
-        String id = metadataRepository.save(new ContentItem(mediaUri, file.getOriginalFilename(), verifiedMetadata));
+        String contentItemIdentifier = files[0].getOriginalFilename();
+
+        String id = metadataRepository.save(new ContentItem(fileList, contentItemIdentifier, verifiedMetadata));
+        log.info("Saved content item with id: {}", id);
 
         return new ResponseEntity<Void>(createLocationHeader(uriComponentsBuilder, id), HttpStatus.CREATED);
     }
 
+
+
     @GetMapping("/content-items")
-    public @ResponseBody ContentItemsResponse findAll(@RequestParam(value = "filter", required = false) String filter) {
+    public
+    @ResponseBody
+    ContentItemsResponse findAll(@RequestParam(value = "filter", required = false) String filter) {
         if (filter == null || filter.isEmpty()) {
-            filter = "{ 'metadata.mediaType': 'application/pdf'}";
+            filter = "{ 'metadata.mediaType': 'application/pdf' }";
         }
 
         return new ContentItemsResponse(metadataRepository.findAll(filter));
     }
 
-    private void logParameters(MultipartFile file, String metadata) {
-        log.info("filename: " + file.getOriginalFilename());
-        log.info("file size: " + file.getSize());
-        log.info("metadata: " + metadata);
-    }
 
     private HttpHeaders createLocationHeader(UriComponentsBuilder uriComponentsBuilder, String id) {
         HttpHeaders headers = new HttpHeaders();
@@ -65,13 +66,18 @@ public class AdminController {
         return headers;
     }
 
-    private Map<String, Object> validateMetadataIsWellFormedJson(String metadata) {
+    private Map<String, Object> parseMetadata(String metadata) {
+        log.info("metadata: {}", metadata);
+
         ObjectMapper objectMapper = new ObjectMapper();
+        MapType mapType = objectMapper.getTypeFactory().constructMapType(HashMap.class, String.class, Object.class);
+
         try {
-            return objectMapper.readValue(metadata, new TypeReference<Map<String, Object>>() { });
+            return objectMapper.readValue(metadata, mapType);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
 
 }
