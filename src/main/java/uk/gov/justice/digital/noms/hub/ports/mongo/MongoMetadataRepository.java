@@ -23,7 +23,7 @@ import static com.mongodb.client.model.ReturnDocument.AFTER;
 import static com.mongodb.client.model.Sorts.descending;
 import static com.mongodb.client.model.Sorts.orderBy;
 import static java.time.format.DateTimeFormatter.ISO_INSTANT;
-import static java.util.Collections.EMPTY_MAP;
+import static java.util.Collections.emptyMap;
 
 @Slf4j
 @Repository
@@ -78,20 +78,21 @@ public class MongoMetadataRepository implements MetadataRepository {
                 .id(getValueFrom(document, "_id"))
                 .filename(getValueFrom(document, "filename"))
                 .timestamp(getValueFrom(document, "timestamp"))
-                .mediaUri(getValueFrom(document, "uri"))
-                .metadata(getMetadataMapFrom(document))
+                .files(getMapFrom(document, "files"))
+                .metadata(getMapFrom(document, "metadata"))
                 .build();
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, Object> getMetadataMapFrom(Document document) {
-        Object o = document.get("metadata");
+    private Map<String, Object> getMapFrom(Document document, String key) {
+        Object o = document.get(key);
         if (o != null && o instanceof Map) {
             return (Map<String, Object>) o;
         }
 
-        return EMPTY_MAP;
+        return emptyMap();
     }
+
 
     private String getValueFrom(Document document, String key) {
         Object o = document.get(key);
@@ -105,7 +106,7 @@ public class MongoMetadataRepository implements MetadataRepository {
     private BasicDBObject anUpdateFor(ContentItem contentItem) {
         BasicDBObject contentItemDocument =
                 new BasicDBObject("filename", contentItem.getFilename())
-                        .append("uri", contentItem.getMediaUri())
+                        .append("files", contentItem.getFiles())
                         .append("metadata", contentItem.getMetadata())
                         .append("timestamp", ISO_INSTANT.format(Instant.now()));
 

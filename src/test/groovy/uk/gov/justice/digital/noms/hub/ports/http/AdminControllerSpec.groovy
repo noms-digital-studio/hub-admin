@@ -11,6 +11,7 @@ import uk.gov.justice.digital.noms.hub.domain.MediaRepository
 import uk.gov.justice.digital.noms.hub.domain.MetadataRepository
 
 class AdminControllerSpec extends Specification {
+
     private static final String TITLE = "aTitle"
     private static final String FILENAME = "aFilename"
     private static final String TIMESTAMP = "2017-02-13T11:46:14.154Z"
@@ -18,41 +19,63 @@ class AdminControllerSpec extends Specification {
     private static final String MEDIA_TYPE = "aMediaType"
 
     private AdminController adminController
+    private MediaStore mediaStore
 
     def file = Mock(MultipartFile)
+    def file2 = Mock(MultipartFile)
     def mediaRepository = Mock(MediaRepository)
     def metadataRepository = Mock(MetadataRepository)
 
     def setup() {
-        adminController = new AdminController(metadataRepository, mediaRepository)
+        mediaStore = new MediaStore(mediaRepository)
+        adminController = new AdminController(metadataRepository, mediaStore)
     }
 
     def 'saveFileAndMetadata saves the file and its data then returns a location header'() {
         given:
-        def uri = aMediaRepositoryThatReturnsAUri()
-        def id = aMetadataRepositoryThatReturnsAnId(uri)
+        def files = [file] as MultipartFile[]
+        def fileLabels = """["main"]"""
+
+        def id = UUID.randomUUID().toString()
+        metadataRepository.save(_) >> id
 
         when:
         ResponseEntity responseEntity =
-                adminController.saveFileAndMetadata(file, someJsonMetadata(), UriComponentsBuilder.newInstance())
+                adminController.saveFileAndMetadata(files, someJsonMetadata(fileLabels), UriComponentsBuilder.newInstance())
 
         then:
         responseEntity.getStatusCodeValue() == HttpStatus.SC_CREATED
         responseEntity.getHeaders().Location.first() == "/content-items/" + id
     }
 
-    def 'saveFileAndMetadata throws RuntimeException when the JSON metadata is malformed'() {
+    def 'uses name of first file as primary identifier'() {
+        given:
+        file.name >> 'file1'
+        file2.name >> 'file2'
+        def files = [file, file2] as MultipartFile[]
+        def fileLabels = """["main", "thumbnail"]"""
+
         when:
-        adminController.saveFileAndMetadata(file, 'not a json string', UriComponentsBuilder.newInstance())
+        adminController.saveFileAndMetadata(files, someJsonMetadata(fileLabels), UriComponentsBuilder.newInstance())
 
         then:
-        thrown(RuntimeException)
+        metadataRepository.save(_ as ContentItem) >> { contentItem ->
+            contentItem.filename == 'file1'
+        }
+    }
+
+    def 'saveFileAndMetadata throws RuntimeException when the JSON metadata is malformed'() {
+        when:
+        adminController.saveFileAndMetadata([file] as MultipartFile[], 'not a json string', UriComponentsBuilder.newInstance())
+
+        then:
+        thrown RuntimeException
     }
 
     def 'all content items are returned by findAll'() {
         given:
         def expectedContentItems = someContentItems()
-        metadataRepository.findAll("{ 'metadata.mediaType': 'application/pdf'}") >> expectedContentItems
+        metadataRepository.findAll("{ 'metadata.mediaType': 'application/pdf' }") >> expectedContentItems
 
         when:
         ContentItemsResponse response = adminController.findAll(null)
@@ -61,36 +84,21 @@ class AdminControllerSpec extends Specification {
         response.contentItems == expectedContentItems
     }
 
-    def aMediaRepositoryThatReturnsAUri() throws IOException {
-        InputStream io = StreamUtils.emptyInput()
-        file.getInputStream() >> io
-        file.getSize() >> 0L
-        String uri = "aUri"
-        mediaRepository.save(io, FILENAME, 0L) >> uri
-        uri
-    }
-
-    def aMetadataRepositoryThatReturnsAnId(String uri) {
-        file.getOriginalFilename() >> FILENAME
-        String id = UUID.randomUUID().toString()
-        metadataRepository.save(new ContentItem(uri, FILENAME, someMetadata())) >> id
-        id
-    }
-
     def someContentItems() {
         [aContentItem(), aContentItem()]
     }
 
     def aContentItem() {
-        new ContentItem(UUID.randomUUID().toString(), "aUri", FILENAME, TIMESTAMP, someMetadata())
+        new ContentItem(UUID.randomUUID().toString(), ['main': "aUri"], FILENAME, TIMESTAMP, someMetadata())
     }
 
-    def someJsonMetadata() {
+    def someJsonMetadata(fileLabels) {
         """
         { 
             "title": "${TITLE}", 
             "category": "${CATEGORY}", 
-            "mediaType": "${MEDIA_TYPE}" 
+            "mediaType": "${MEDIA_TYPE}",
+            "fileLabels": ${fileLabels}
         }
         """
     }
