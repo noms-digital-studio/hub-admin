@@ -51,7 +51,7 @@ public class MediaStore {
 
         for (FileSpec fileSpec : files) {
             logFileParameters(fileSpec);
-            String id = mediaRepository.save(fileSpec.getInputStream(), fileSpec.getFilename(), fileSpec.getSize());
+            String id = mediaRepository.save(fileSpec);
             fileUris.add(id);
         }
 

@@ -4,6 +4,7 @@ import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.*;
 import org.springframework.stereotype.Repository;
+import uk.gov.justice.digital.noms.hub.domain.FileSpec;
 import uk.gov.justice.digital.noms.hub.domain.MediaRepository;
 
 import java.io.IOException;
@@ -43,11 +44,12 @@ public class AzureMediaRepository implements MediaRepository {
     }
 
     @Override
-    public String save(InputStream mediaStream, String filename, long size) {
+    public String save(FileSpec file) {
+
         try {
-            CloudBlockBlob blob = container.getBlockBlobReference(filename);
-            blob.upload(mediaStream, size);
-            return String.format("%s/%s/%s", azurePublicUrlBase, CONTAINER_NAME, filename);
+            CloudBlockBlob blob = container.getBlockBlobReference(file.getFilename());
+            blob.upload(file.getInputStream(), file.getSize());
+            return String.format("%s/%s/%s", azurePublicUrlBase, CONTAINER_NAME, file.getFilename());
         } catch (URISyntaxException | StorageException | IOException e) {
             throw new RuntimeException(e);
         }
