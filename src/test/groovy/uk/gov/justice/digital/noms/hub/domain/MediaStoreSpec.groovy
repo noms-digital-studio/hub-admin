@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.noms.hub.ports.http
+package uk.gov.justice.digital.noms.hub.domain
 
 import org.springframework.web.multipart.MultipartFile
 import spock.lang.Shared
