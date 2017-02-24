@@ -11,10 +11,14 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.justice.digital.noms.hub.domain.ContentItem;
+import uk.gov.justice.digital.noms.hub.domain.FileSpec;
+import uk.gov.justice.digital.noms.hub.domain.MediaStore;
 import uk.gov.justice.digital.noms.hub.domain.MetadataRepository;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -35,7 +39,7 @@ public class AdminController {
                                               UriComponentsBuilder uriComponentsBuilder) throws IOException {
 
         Map<String, Object> verifiedMetadata = parseMetadata(metadata);
-        Map<String, Object> fileList = mediaStore.storeFiles(files, verifiedMetadata);
+        Map<String, Object> fileList = mediaStore.storeFiles(fileSpecsFor(files), verifiedMetadata);
 
         String contentItemIdentifier = files[0].getOriginalFilename();
 
@@ -44,8 +48,6 @@ public class AdminController {
 
         return new ResponseEntity<Void>(createLocationHeader(uriComponentsBuilder, id), HttpStatus.CREATED);
     }
-
-
 
     @GetMapping("/content-items")
     public
@@ -79,5 +81,21 @@ public class AdminController {
         }
     }
 
+    private List<FileSpec> fileSpecsFor(MultipartFile[] files) {
+        List<FileSpec> fileSpecs = new ArrayList<>();
+        for (MultipartFile file : files) {
+            fileSpecs.add(fileSpecFor(file));
+        }
+        return fileSpecs;
+    }
+
+    private FileSpec fileSpecFor(MultipartFile file) {
+        try {
+            return new FileSpec(file.getInputStream(), file.getOriginalFilename(), file.getSize());
+        } catch (IOException e) {
+            log.error("Exception during file store:", e);
+            throw new RuntimeException("Failed to store files: " + e.getMessage());
+        }
+    }
 
 }

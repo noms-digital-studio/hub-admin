@@ -1,12 +1,9 @@
-package uk.gov.justice.digital.noms.hub.ports.http;
+package uk.gov.justice.digital.noms.hub.domain;
 
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
-import uk.gov.justice.digital.noms.hub.domain.MediaRepository;
 
-import java.io.IOException;
 import java.util.*;
 
 @Slf4j
@@ -19,58 +16,50 @@ public class MediaStore {
         this.mediaRepository = mediaRepository;
     }
 
-    public Map<String, Object> storeFiles(MultipartFile[] files, Map<String, Object> verifiedMetadata) {
-        List<String> fileLabels = getFileLabels(verifiedMetadata);
-
-        try {
-            return save(files, fileLabels);
-        } catch (IOException e) {
-            log.error("Exception during file store:", e);
-            throw new RuntimeException("Failed to store files: " + e.getMessage());
-        }
+    public Map<String, Object> storeFiles(List<FileSpec> files, Map<String, Object> verifiedMetadata) {
+        return save(files, fileLabelsFrom(verifiedMetadata));
     }
 
     @SuppressWarnings("unchecked")
-    private List<String> getFileLabels(Map<String, Object> verifiedMetadata) {
+    private List<String> fileLabelsFrom(Map<String, Object> verifiedMetadata) {
         if (verifiedMetadata.containsKey("fileLabels")) {
             return (List) verifiedMetadata.remove("fileLabels");
         }
         return Collections.emptyList();
     }
 
-    private Map<String, Object> save(MultipartFile[] files, List<String> fileLabels) throws IOException {
+    private Map<String, Object> save(List<FileSpec> files, List<String> fileLabels) {
 
-        if (files.length != fileLabels.size()) {
-            log.error("Mismatched files: {} and file labels: {}", files.length, fileLabels.size());
+        if (files.size() != fileLabels.size()) {
+            log.error("Mismatched files: {} and file labels: {}", files.size(), fileLabels.size());
             throw new RuntimeException("Mismatched files and file labels");
         }
 
-        if (files.length < 1) {
+        if (files.size() < 1) {
             log.error("No files received");
             throw new RuntimeException("No files received");
         }
-
 
         List<String> fileUris = store(files);
 
         return buildFileList(fileLabels, fileUris);
     }
 
-    private List<String> store(MultipartFile[] files) throws IOException {
+    private List<String> store(List<FileSpec> files) {
 
         List<String> fileUris = new ArrayList<>();
 
-        for (MultipartFile file : files) {
-            logFileParameters(file);
-            String id = mediaRepository.save(file.getInputStream(), file.getOriginalFilename(), file.getSize());
+        for (FileSpec fileSpec : files) {
+            logFileParameters(fileSpec);
+            String id = mediaRepository.save(fileSpec.getInputStream(), fileSpec.getFilename(), fileSpec.getSize());
             fileUris.add(id);
         }
 
         return fileUris;
     }
 
-    private void logFileParameters(MultipartFile file) {
-        log.debug("filename: " + file.getOriginalFilename());
+    private void logFileParameters(FileSpec file) {
+        log.debug("filename: " + file.getFilename());
         log.debug("file size: " + file.getSize());
     }
 

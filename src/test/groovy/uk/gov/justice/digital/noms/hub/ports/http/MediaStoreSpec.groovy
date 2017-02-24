@@ -1,11 +1,12 @@
 package uk.gov.justice.digital.noms.hub.ports.http
 
-import org.springframework.util.StreamUtils
 import org.springframework.web.multipart.MultipartFile
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
+import uk.gov.justice.digital.noms.hub.domain.FileSpec
 import uk.gov.justice.digital.noms.hub.domain.MediaRepository
+import uk.gov.justice.digital.noms.hub.domain.MediaStore
 
 class MediaStoreSpec extends Specification {
 
@@ -13,7 +14,7 @@ class MediaStoreSpec extends Specification {
     private mediaRepository = Mock(MediaRepository)
 
     @Shared
-    private file = Mock(MultipartFile)
+    private file = Mock(FileSpec)
 
     def setup() {
         mediaStore = new MediaStore(mediaRepository)
@@ -21,7 +22,7 @@ class MediaStoreSpec extends Specification {
 
     def 'throws exception when no files'() {
         when:
-        mediaStore.storeFiles([] as MultipartFile[], someMetadata([]))
+        mediaStore.storeFiles([], someMetadata([]))
 
         then:
         thrown RuntimeException
@@ -30,7 +31,7 @@ class MediaStoreSpec extends Specification {
     @Unroll
     def 'throws exception when #files.size file(s) and #labels.size label(s)'() {
         when:
-        mediaStore.storeFiles(files as MultipartFile[], someMetadata(labels))
+        mediaStore.storeFiles(files, someMetadata(labels))
 
         then:
         thrown RuntimeException
@@ -49,7 +50,7 @@ class MediaStoreSpec extends Specification {
         mediaRepository.save(*_) >>> ['first', 'second', 'third']
 
         when:
-        Map fileList = mediaStore.storeFiles([file, file, file] as MultipartFile[], someMetadata(["1", "2", "3"]))
+        Map fileList = mediaStore.storeFiles([file, file, file], someMetadata(["1", "2", "3"]))
 
         then:
         fileList.get("1") == 'first'
@@ -60,7 +61,7 @@ class MediaStoreSpec extends Specification {
     @Unroll
     def 'calls mediastore #count times when #count file(s)'() {
         when:
-        mediaStore.storeFiles(files as MultipartFile[], someMetadata(labels))
+        mediaStore.storeFiles(files, someMetadata(labels))
 
         then:
         count * mediaRepository.save(*_)

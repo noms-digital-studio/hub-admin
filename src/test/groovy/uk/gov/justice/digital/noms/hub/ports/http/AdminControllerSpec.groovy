@@ -2,12 +2,12 @@ package uk.gov.justice.digital.noms.hub.ports.http
 
 import org.apache.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.util.StreamUtils
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.util.UriComponentsBuilder
 import spock.lang.Specification
 import uk.gov.justice.digital.noms.hub.domain.ContentItem
 import uk.gov.justice.digital.noms.hub.domain.MediaRepository
+import uk.gov.justice.digital.noms.hub.domain.MediaStore
 import uk.gov.justice.digital.noms.hub.domain.MetadataRepository
 
 class AdminControllerSpec extends Specification {
