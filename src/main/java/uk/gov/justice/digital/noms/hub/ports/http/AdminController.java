@@ -42,11 +42,10 @@ public class AdminController {
     }
 
     @GetMapping("/content-items/{id}")
-    public
-    ResponseEntity findById(@PathVariable String id) {
+    public ResponseEntity findById(@PathVariable String id) {
         Optional<ContentItem> item = metadataRepository.findById(id);
 
-        if(item.isPresent()) {
+        if (item.isPresent()) {
             return new ResponseEntity<>(item.get(), HttpStatus.CREATED);
         }
 
@@ -62,13 +61,8 @@ public class AdminController {
         Map<String, Object> fileList = mediaStore.storeFiles(fileSpecsFor(files), verifiedMetadata);
 
         ContentItem contentItem = new ContentItem(fileList, files[0].getOriginalFilename(), verifiedMetadata);
-
-        String id = metadataRepository.save(contentItem);
-        log.info("Saved content item with id: {}", id);
-
-        return creationResponse(uriComponentsBuilder, id);
+        return saveOrUpdate(uriComponentsBuilder, contentItem);
     }
-
 
 
     @PutMapping("/content-items/{id}")
@@ -76,13 +70,16 @@ public class AdminController {
                                      @RequestBody ContentItemRequest contentItemRequest,
                                      UriComponentsBuilder uriComponentsBuilder) {
 
-        if(id != contentItemRequest.getId()) {
-            return ResponseEntity.badRequest().build();
+        if (id.equals(contentItemRequest.getId())) {
+            return saveOrUpdate(uriComponentsBuilder, contentItemRequest.toContentItem());
         }
 
-        metadataRepository.save(contentItemRequest.toContentItem());
-        log.info("Updated content item with id: {}", id);
+        return ResponseEntity.badRequest().build();
+    }
 
+    private ResponseEntity saveOrUpdate(UriComponentsBuilder uriComponentsBuilder, ContentItem item) {
+        String id = metadataRepository.save(item);
+        log.info("Saved content item with id: {}", id);
         return creationResponse(uriComponentsBuilder, id);
     }
 
