@@ -9,6 +9,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Repository;
 import uk.gov.justice.digital.noms.hub.domain.ContentItem;
 import uk.gov.justice.digital.noms.hub.domain.MetadataRepository;
@@ -17,6 +18,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.ReturnDocument.AFTER;
@@ -65,12 +67,26 @@ public class MongoMetadataRepository implements MetadataRepository {
         MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
         FindIterable<Document> documents =
                 collection.find(BasicDBObject.parse(filter))
-                          .sort(orderBy(descending("timestamp")));
+                        .sort(orderBy(descending("timestamp")));
         for (Document document : documents) {
             result.add(aContentItemFrom(document));
         }
 
         return result;
+    }
+
+    @Override
+    public Optional<ContentItem> findById(String id) {
+        MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
+        BasicDBObject query = new BasicDBObject("_id", new ObjectId(id));
+
+        FindIterable<Document> documents = collection.find(query);
+
+        if (documents.iterator().hasNext()) {
+            return Optional.of(aContentItemFrom(documents.first()));
+        }
+
+        return Optional.empty();
     }
 
     private ContentItem aContentItemFrom(Document document) {

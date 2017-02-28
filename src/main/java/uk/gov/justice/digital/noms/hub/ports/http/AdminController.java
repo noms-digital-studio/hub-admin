@@ -16,10 +16,7 @@ import uk.gov.justice.digital.noms.hub.domain.MediaStore;
 import uk.gov.justice.digital.noms.hub.domain.MetadataRepository;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @RestController
@@ -33,22 +30,6 @@ public class AdminController {
         this.mediaStore = mediaStore;
     }
 
-    @PostMapping("/content-items")
-    public ResponseEntity saveFileAndMetadata(@RequestParam("file") MultipartFile[] files,
-                                              @RequestParam("metadata") String metadata,
-                                              UriComponentsBuilder uriComponentsBuilder) throws IOException {
-
-        Map<String, Object> verifiedMetadata = parseMetadata(metadata);
-        Map<String, Object> fileList = mediaStore.storeFiles(fileSpecsFor(files), verifiedMetadata);
-
-        String contentItemIdentifier = files[0].getOriginalFilename();
-
-        String id = metadataRepository.save(new ContentItem(fileList, contentItemIdentifier, verifiedMetadata));
-        log.info("Saved content item with id: {}", id);
-
-        return new ResponseEntity<Void>(createLocationHeader(uriComponentsBuilder, id), HttpStatus.CREATED);
-    }
-
     @GetMapping("/content-items")
     public
     @ResponseBody
@@ -60,6 +41,54 @@ public class AdminController {
         return new ContentItemsResponse(metadataRepository.findAll(filter));
     }
 
+    @GetMapping("/content-items/{id}")
+    public
+    ResponseEntity findById(@PathVariable String id) {
+        Optional<ContentItem> item = metadataRepository.findById(id);
+
+        if(item.isPresent()) {
+            return new ResponseEntity<>(item.get(), HttpStatus.CREATED);
+        }
+
+        return ResponseEntity.notFound().build();
+    }
+
+    @PostMapping("/content-items")
+    public ResponseEntity saveFileAndMetadata(@RequestParam("file") MultipartFile[] files,
+                                              @RequestParam("metadata") String metadata,
+                                              UriComponentsBuilder uriComponentsBuilder) throws IOException {
+
+        Map<String, Object> verifiedMetadata = parseMetadata(metadata);
+        Map<String, Object> fileList = mediaStore.storeFiles(fileSpecsFor(files), verifiedMetadata);
+
+        ContentItem contentItem = new ContentItem(fileList, files[0].getOriginalFilename(), verifiedMetadata);
+
+        String id = metadataRepository.save(contentItem);
+        log.info("Saved content item with id: {}", id);
+
+        return creationResponse(uriComponentsBuilder, id);
+    }
+
+
+
+    @PutMapping("/content-items/{id}")
+    public ResponseEntity updateById(@PathVariable String id,
+                                     @RequestBody ContentItemRequest contentItemRequest,
+                                     UriComponentsBuilder uriComponentsBuilder) {
+
+        if(id != contentItemRequest.getId()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        metadataRepository.save(contentItemRequest.toContentItem());
+        log.info("Updated content item with id: {}", id);
+
+        return creationResponse(uriComponentsBuilder, id);
+    }
+
+    private ResponseEntity creationResponse(UriComponentsBuilder uriComponentsBuilder, String id) {
+        return new ResponseEntity<Void>(createLocationHeader(uriComponentsBuilder, id), HttpStatus.CREATED);
+    }
 
     private HttpHeaders createLocationHeader(UriComponentsBuilder uriComponentsBuilder, String id) {
         HttpHeaders headers = new HttpHeaders();

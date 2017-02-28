@@ -84,6 +84,52 @@ class AdminControllerSpec extends Specification {
         response.contentItems == expectedContentItems
     }
 
+    def 'finds a content item by id'(){
+        given:
+        def expected = aContentItem()
+        metadataRepository.findById(expected.id) >> Optional.of(expected)
+
+        when:
+        ResponseEntity result = adminController.findById(expected.id)
+
+        then:
+        result.getBody() == expected
+    }
+
+    def 'find by id gives 404 when no match'(){
+        given:
+        metadataRepository.findById(_) >> Optional.empty()
+
+        when:
+        ResponseEntity result = adminController.findById("no-such-id")
+
+        then:
+        result.statusCodeValue == 404
+    }
+
+    def 'updates matching item' (){
+        given:
+        def item = aContentItem()
+
+        when:
+        adminController.updateById(item.id, new ContentItemRequest(item), new UriComponentsBuilder())
+
+        then:
+        1 * metadataRepository.save(_)
+    }
+
+    def '400 when item update with mismatched ID'(){
+        given:
+        def item = aContentItem()
+
+        when:
+        ResponseEntity result = adminController.updateById('different-id', new ContentItemRequest(item), new UriComponentsBuilder())
+
+        then:
+        result.statusCodeValue == 400
+    }
+
+
     def someContentItems() {
         [aContentItem(), aContentItem()]
     }
