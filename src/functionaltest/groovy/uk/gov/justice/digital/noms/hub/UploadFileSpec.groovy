@@ -29,28 +29,19 @@ class UploadFileSpec extends Specification {
     private String adminAppRoot
 
     @Shared
-    private GMongo mongo
-
-    @Shared
     private DB db
 
     @Shared
     private CloudBlobContainer container
 
-    private Map basicAuth
     private Date startDate
 
     def setup() {
         theHub = new Hub()
-
         adminAppRoot = theHub.adminUri
 
         MongoClientURI mongoUri = new MongoClientURI(theHub.mongoConnectionUri)
-        mongo = new GMongoClient(mongoUri)
-        db = mongo.getDB("hub_metadata")
-
-        String credentials = "${theHub.username}:${theHub.password}".bytes.encodeBase64()
-        basicAuth = [requestProperties: [Authorization: "Basic ${credentials}"]]
+        db = new GMongoClient(mongoUri).getDB("hub_metadata")
 
         startDate = new Date()
 

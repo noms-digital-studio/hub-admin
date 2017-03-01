@@ -43,6 +43,7 @@ public class AdminController {
 
     @GetMapping("/content-items/{id}")
     public ResponseEntity findById(@PathVariable String id) {
+
         Optional<ContentItem> item = metadataRepository.findById(id);
 
         if (item.isPresent()) {

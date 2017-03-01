@@ -19,30 +19,19 @@ class FindAllContentItemsSpec extends Specification {
     private String adminAppRoot
 
     @Shared
-    private GMongo mongo
-
-    @Shared
     private DB db
 
-    private Map basicAuth
-    private Date aDate
-    private jsonSlurper
+    @Shared
+    private ContentItems contentItems
 
     def setup() {
         theHub = new Hub()
-
         adminAppRoot = theHub.adminUri
 
         MongoClientURI mongoUri = new MongoClientURI(theHub.mongoConnectionUri)
-        mongo = new GMongoClient(mongoUri)
-        db = mongo.getDB("hub_metadata")
+        db = new GMongoClient(mongoUri).getDB("hub_metadata")
 
-        String credentials = "${theHub.username}:${theHub.password}".bytes.encodeBase64()
-        basicAuth = [requestProperties: [Authorization: "Basic ${credentials}"]]
-
-        aDate = Date.parse("yyyy-MM-dd'T'HH:mm:ss'Z'", '2017-01-01T10:00:00Z')
-
-        jsonSlurper = new JsonSlurper()
+        contentItems = new ContentItems(db)
     }
 
     def 'findAll returns all, newest first, with the right contents'() {
@@ -51,12 +40,12 @@ class FindAllContentItemsSpec extends Specification {
         def originalCount = db.contentItem.find().count()
 
         and: 'we create two new items'
-        def itemOneId = insertItem(1)
-        def itemTwoId = insertItem(2)
+        def itemOneId = contentItems.insertItem(1)
+        def itemTwoId = contentItems.insertItem(2)
 
         when: 'we get the all content items JSON resource'
-        def json = (adminAppRoot + '/content-items?filter={}').toURL().getText(basicAuth)
-        def jsonObject = jsonSlurper.parseText(json)
+        def json = (adminAppRoot + '/content-items?filter={}').toURL().getText(theHub.basicAuth)
+        def jsonObject = new JsonSlurper().parseText(json)
         def items = jsonObject.contentItems
 
         and: 'we count the items now in the database'
@@ -88,21 +77,19 @@ class FindAllContentItemsSpec extends Specification {
         matches[1].files.main == 'filename1'
 
         cleanup:
-        [itemOneId, itemTwoId].each {
-            db.contentItem.remove(_id: new ObjectId(it.toString()))
-        }
+        contentItems.remove([itemOneId, itemTwoId])
     }
 
     def 'find all with filter returns only matching items'() {
 
         given: 'we create two new image items'
         def imageType = 'image/jpg'
-        def itemOneId = insertItem(1, imageType)
-        def itemTwoId = insertItem(2, imageType)
+        def itemOneId = contentItems.insertItem(1, imageType)
+        def itemTwoId = contentItems.insertItem(2, imageType)
 
         and: 'we create a new video item'
         def videoType = 'video/mp4'
-        def itemThreeId = insertItem(3, videoType)
+        def itemThreeId = contentItems.insertItem(3, videoType)
 
         when: 'we get the content items filtered for image'
         def imageItems = getJsonForMediaType(imageType)
@@ -121,39 +108,12 @@ class FindAllContentItemsSpec extends Specification {
         videoItems.find { it.id == itemThreeId } != null
 
         cleanup:
-        [itemOneId, itemTwoId, itemThreeId].each {
-            db.contentItem.remove(_id: new ObjectId(it.toString()))
-        }
-    }
-
-    String insertItem(int offset, String mediaType = 'application/pdf') {
-        ObjectId id = ObjectId.get();
-
-        db.contentItem.insert(
-                _id: id,
-                uri: "uri${offset}",
-                filename: "filename${offset}",
-                timestamp: timestamp(offset),
-                files: [
-                        main     : "filename${offset}",
-                        thumbnail: "someUrl/thumb.jpg"
-                ],
-                metadata: [
-                        title    : "title${offset}",
-                        category : "category${offset}",
-                        mediaType: "${mediaType}"]
-        )
-
-        return id
-    }
-
-    String timestamp(int offsetDays) {
-        return aDate.plus(offsetDays - 1).format("yyyy-MM-dd'T'HH:mm:ss'Z'")
+        contentItems.remove([itemOneId, itemTwoId, itemThreeId])
     }
 
     List getJsonForMediaType(mediaType) {
-        def json = (adminAppRoot + "/content-items?filter={'metadata.mediaType':'${mediaType}'}").toURL().getText(basicAuth)
+        def json = (adminAppRoot + "/content-items?filter={'metadata.mediaType':'${mediaType}'}").toURL().getText(theHub.basicAuth)
 
-        return jsonSlurper.parseText(json).contentItems
+        return new JsonSlurper().parseText(json).contentItems
     }
 }

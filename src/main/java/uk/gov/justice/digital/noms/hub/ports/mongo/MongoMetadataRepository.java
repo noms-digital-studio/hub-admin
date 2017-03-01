@@ -30,8 +30,8 @@ import static java.util.Collections.emptyMap;
 @Slf4j
 @Repository
 public class MongoMetadataRepository implements MetadataRepository {
-    private static final String COLLECTION_NAME = "contentItem";
 
+    private static final String COLLECTION_NAME = "contentItem";
     private final MongoDatabase database;
 
     public MongoMetadataRepository() {
@@ -46,80 +46,80 @@ public class MongoMetadataRepository implements MetadataRepository {
 
     @Override
     public String save(ContentItem contentItem) {
-        MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
-        Document updatedDocument = collection
-                .findOneAndUpdate(eq("filename", contentItem.getFilename()),
-                        anUpdateFor(contentItem),
-                        upsertOptions());
 
-        if (updatedDocument != null) {
-            return updatedDocument.getObjectId("_id").toString();
-        } else {
+        Document updatedDocument = collection()
+                .findOneAndUpdate(eq("filename", contentItem.getFilename()),
+                        updateFor(contentItem),
+                        asUpsert());
+
+        if (updatedDocument == null) {
             String message = "No metadata record found for: " + contentItem.getFilename();
             log.error(message);
             throw new RuntimeException(message);
         }
+
+        return updatedDocument.getObjectId("_id").toString();
     }
 
     @Override
     public List<ContentItem> findAll(String filter) {
-        List<ContentItem> result = new ArrayList<>();
-        MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
+
         FindIterable<Document> documents =
-                collection.find(BasicDBObject.parse(filter))
+                collection().find(BasicDBObject.parse(filter))
                         .sort(orderBy(descending("timestamp")));
+
+        List<ContentItem> result = new ArrayList<>();
+
         for (Document document : documents) {
-            result.add(aContentItemFrom(document));
+            result.add(contentItemFrom(document));
         }
 
         return result;
     }
 
+
     @Override
     public Optional<ContentItem> findById(String id) {
-        MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
-        BasicDBObject query = new BasicDBObject("_id", new ObjectId(id));
 
-        FindIterable<Document> documents = collection.find(query);
+        if (!isValid(id)) {
+            return Optional.empty();
+        }
+
+        FindIterable<Document> documents =
+                collection().find(eq("_id", new ObjectId(id)));
 
         if (documents.iterator().hasNext()) {
-            return Optional.of(aContentItemFrom(documents.first()));
+            return Optional.of(contentItemFrom(documents.first()));
         }
 
         return Optional.empty();
     }
 
-    private ContentItem aContentItemFrom(Document document) {
+    private boolean isValid(String id) {
+        try {
+            new ObjectId(id);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    private MongoCollection<Document> collection() {
+        return database.getCollection(COLLECTION_NAME);
+    }
+
+    private ContentItem contentItemFrom(Document document) {
+        MongoDocument doc = new MongoDocument(document);
         return ContentItem.builder()
-                .id(getValueFrom(document, "_id"))
-                .filename(getValueFrom(document, "filename"))
-                .timestamp(getValueFrom(document, "timestamp"))
-                .files(getMapFrom(document, "files"))
-                .metadata(getMapFrom(document, "metadata"))
+                .id(doc.getValue("_id"))
+                .filename(doc.getValue("filename"))
+                .timestamp(doc.getValue("timestamp"))
+                .files(doc.getMap("files"))
+                .metadata(doc.getMap("metadata"))
                 .build();
     }
 
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> getMapFrom(Document document, String key) {
-        Object o = document.get(key);
-        if (o != null && o instanceof Map) {
-            return (Map<String, Object>) o;
-        }
-
-        return emptyMap();
-    }
-
-
-    private String getValueFrom(Document document, String key) {
-        Object o = document.get(key);
-        if (o != null) {
-            return o.toString();
-        }
-
-        return "";
-    }
-
-    private BasicDBObject anUpdateFor(ContentItem contentItem) {
+    private BasicDBObject updateFor(ContentItem contentItem) {
         BasicDBObject contentItemDocument =
                 new BasicDBObject("filename", contentItem.getFilename())
                         .append("files", contentItem.getFiles())
@@ -129,10 +129,35 @@ public class MongoMetadataRepository implements MetadataRepository {
         return new BasicDBObject("$set", contentItemDocument);
     }
 
-    private FindOneAndUpdateOptions upsertOptions() {
+    private FindOneAndUpdateOptions asUpsert() {
         FindOneAndUpdateOptions findOneAndUpdateOptions = new FindOneAndUpdateOptions();
         findOneAndUpdateOptions.upsert(true);
         findOneAndUpdateOptions.returnDocument(AFTER);
+
         return findOneAndUpdateOptions;
+    }
+
+    private class MongoDocument {
+
+        private final Document document;
+
+        MongoDocument(Document document) {
+            this.document = document;
+        }
+
+        String getValue(String key) {
+            Object o = document.get(key);
+            return o == null ? "" : o.toString();
+        }
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> getMap(String key) {
+            Object o = document.get(key);
+            if (o != null && o instanceof Map) {
+                return (Map<String, Object>) o;
+            }
+
+            return emptyMap();
+        }
     }
 }
