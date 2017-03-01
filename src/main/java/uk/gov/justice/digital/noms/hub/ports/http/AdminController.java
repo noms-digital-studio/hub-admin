@@ -47,7 +47,7 @@ public class AdminController {
         Optional<ContentItem> item = metadataRepository.findById(id);
 
         if (item.isPresent()) {
-            return new ResponseEntity<>(item.get(), HttpStatus.CREATED);
+            return new ResponseEntity<>(item.get(), HttpStatus.OK);
         }
 
         return ResponseEntity.notFound().build();

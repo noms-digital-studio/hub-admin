@@ -93,6 +93,7 @@ class AdminControllerSpec extends Specification {
         ResponseEntity result = adminController.findById(expected.id)
 
         then:
+        result.statusCodeValue == 200
         result.getBody() == expected
     }
 
