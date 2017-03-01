@@ -3,12 +3,9 @@ package uk.gov.justice.digital.noms.hub.ports.http;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.justice.digital.noms.hub.domain.ContentItem;
 import uk.gov.justice.digital.noms.hub.domain.FileSpec;
@@ -16,6 +13,7 @@ import uk.gov.justice.digital.noms.hub.domain.MediaStore;
 import uk.gov.justice.digital.noms.hub.domain.MetadataRepository;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.*;
 
 @Slf4j
@@ -47,7 +45,7 @@ public class AdminController {
         Optional<ContentItem> item = metadataRepository.findById(id);
 
         if (item.isPresent()) {
-            return new ResponseEntity<>(item.get(), HttpStatus.OK);
+            return ResponseEntity.ok().body(item.get());
         }
 
         return ResponseEntity.notFound().build();
@@ -85,14 +83,11 @@ public class AdminController {
     }
 
     private ResponseEntity creationResponse(UriComponentsBuilder uriComponentsBuilder, String id) {
-        return new ResponseEntity<Void>(createLocationHeader(uriComponentsBuilder, id), HttpStatus.CREATED);
+        return ResponseEntity.created(uriFrom(uriComponentsBuilder, id)).build();
     }
 
-    private HttpHeaders createLocationHeader(UriComponentsBuilder uriComponentsBuilder, String id) {
-        HttpHeaders headers = new HttpHeaders();
-        UriComponents uriComponents = uriComponentsBuilder.path("/content-items/{id}").buildAndExpand(id);
-        headers.setLocation(uriComponents.toUri());
-        return headers;
+    private URI uriFrom(UriComponentsBuilder uriComponentsBuilder, String id) {
+        return uriComponentsBuilder.path("/content-items/{id}").buildAndExpand(id).toUri();
     }
 
     private Map<String, Object> parseMetadata(String metadata) {
