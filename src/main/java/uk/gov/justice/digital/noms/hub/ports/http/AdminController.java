@@ -79,10 +79,6 @@ public class AdminController {
     private ResponseEntity saveOrUpdate(UriComponentsBuilder uriComponentsBuilder, ContentItem item) {
         String id = metadataRepository.save(item);
         log.info("Saved content item with id: {}", id);
-        return creationResponse(uriComponentsBuilder, id);
-    }
-
-    private ResponseEntity creationResponse(UriComponentsBuilder uriComponentsBuilder, String id) {
         return ResponseEntity.created(uriFrom(uriComponentsBuilder, id)).build();
     }
 
