@@ -3,12 +3,12 @@ package uk.gov.justice.digital.noms.hub.ports.azure;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.*;
+import org.springframework.boot.context.embedded.MimeMappings;
 import org.springframework.stereotype.Repository;
 import uk.gov.justice.digital.noms.hub.domain.FileSpec;
 import uk.gov.justice.digital.noms.hub.domain.MediaRepository;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 
@@ -48,10 +48,18 @@ public class AzureMediaRepository implements MediaRepository {
 
         try {
             CloudBlockBlob blob = container.getBlockBlobReference(file.getFilename());
+            blob.getProperties().setContentType(getMimeType(file.getFilename()));
             blob.upload(file.getInputStream(), file.getSize());
+
             return String.format("%s/%s/%s", azurePublicUrlBase, CONTAINER_NAME, file.getFilename());
         } catch (URISyntaxException | StorageException | IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    static String getMimeType(String fileName) {
+        String mimeType = MimeMappings.DEFAULT.get(fileName.substring(fileName.lastIndexOf(".") + 1));
+
+        return mimeType == null ? "application/octet-stream" : mimeType;
     }
 }
