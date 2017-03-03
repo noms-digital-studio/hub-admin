@@ -1,13 +1,11 @@
 package uk.gov.justice.digital.noms.hub
 
-import com.gmongo.GMongo
 import com.gmongo.GMongoClient
 import com.mashape.unirest.http.Unirest
 import com.microsoft.azure.storage.CloudStorageAccount
 import com.microsoft.azure.storage.blob.*
 import com.mongodb.DB
 import com.mongodb.MongoClientURI
-import groovy.json.JsonSlurper
 import org.bson.types.ObjectId
 import spock.lang.Shared
 import spock.lang.Specification
@@ -34,16 +32,12 @@ class UploadFileSpec extends Specification {
     @Shared
     private CloudBlobContainer container
 
-    private Date startDate
-
     def setup() {
         theHub = new Hub()
         adminAppRoot = theHub.adminUri
 
         MongoClientURI mongoUri = new MongoClientURI(theHub.mongoConnectionUri)
         db = new GMongoClient(mongoUri).getDB("hub_metadata")
-
-        startDate = new Date()
 
         CloudStorageAccount storageAccount = CloudStorageAccount.parse(theHub.azureConnectionUri)
         CloudBlobClient blobClient = storageAccount.createCloudBlobClient()
@@ -88,7 +82,7 @@ class UploadFileSpec extends Specification {
 
         and: 'the data record has a timestamp'
         def timestamp = Date.parse("yyyy-MM-dd'T'HH:mm:ss.sss'Z'", itemData.timestamp)
-        timestamp.compareTo(startDate) >= 0
+        timestamp != null
 
         and: 'the data record contains the content uri'
         itemData.files.main == "${theHub.azurePublicUrlBase}/content-items/${FILE_NAME}"
