@@ -17,7 +17,7 @@ class Hub {
         username = System.getenv('BASIC_AUTH_USERNAME') ?: 'user'
         password = System.getenv('BASIC_AUTH_PASSWORD') ?: 'password'
 
-        adminUri = (System.getenv('APPLICATION_URL') ?: "http://localhost:8080/hub-admin")
+        adminUri = (System.getenv('APPLICATION_URL') ?: "http://localhost:8090/hub-admin")
         adminUri = adminUri.replaceFirst('^https?://', "http://${username}:${password}@")
 
         mongoConnectionUri = System.getenv('MONGODB_CONNECTION_URI') ?: 'mongodb://localhost:27017'
