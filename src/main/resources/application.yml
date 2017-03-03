@@ -1,5 +1,6 @@
 server:
     contextPath: ${hubadmin.contextpath:/hub-admin}
+    port: 8090
 
 endpoints:
     enabled: false
@@ -18,6 +19,3 @@ security:
   user:
     name: ${basic.auth.username:user}
     password: ${basic.auth.password:password}
-
-server.port:
-  8090
